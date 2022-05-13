@@ -27,7 +27,7 @@ const Header = () => {
                     <div className="flex justify-start items-center">
                         <a
                             className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-center"
-                            href="https://github.com/bbonkr/sample-next-i18next"
+                            href="https://github.com/bbonkr/sample-react-formbuiler"
                             target="_blank"
                             rel="noreferrer noopener"
                         >
