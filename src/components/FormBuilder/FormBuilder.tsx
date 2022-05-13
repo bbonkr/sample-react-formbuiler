@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { elementTypeItems, elementTypes, FormSource } from './types';
-import type { FormItem, ElementType } from './types';
+import {
+    elementTypeItems,
+    elementTypes,
+    FormSource,
+} from '../FormRenderer/types';
+import type { FormItem, ElementType } from '../FormRenderer/types';
 import { useFormik } from 'formik';
-import FormPreview from './FormPreview';
+import FormRenderer from '../FormRenderer/FormRenderer';
 import { boolean, object, SchemaOf, string, mixed } from 'yup';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
@@ -93,6 +97,12 @@ const FormBuilder = () => {
             setFieldError('options', undefined);
         }
 
+        if (selectedElementType === 'radio') {
+            setFieldValue('isRequired', true);
+        } else {
+            setFieldValue('isRequired', false);
+        }
+
         handleChange(e);
     };
 
@@ -173,7 +183,7 @@ const FormBuilder = () => {
     }, [currentFormSourceId]);
 
     return (
-        <div>
+        <div className="flex flex-col">
             <div className="flex flex-row justify-center items-stretch gap-3">
                 <div className="flex-1">
                     <select
@@ -209,7 +219,7 @@ const FormBuilder = () => {
             <div className="flex flex-row w-full gap-3">
                 <div className="flex-1">
                     <h2 className="font-extrabold my-2">Preview</h2>
-                    <FormPreview
+                    <FormRenderer
                         formItems={currentFormSource?.items}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
@@ -321,6 +331,7 @@ const FormBuilder = () => {
                                     type="checkbox"
                                     {...getFieldProps('isRequired')}
                                     checked={values.isRequired ?? false}
+                                    disabled={values.elementType === 'radio'}
                                 />
                                 {' This field is required'}
                             </label>
@@ -345,13 +356,13 @@ const FormBuilder = () => {
             <div className="flex flex-row justify-center items-stretch">
                 <div className="flex-1">
                     Result:
-                    <pre className="w-full">
+                    <pre className="break-words whitespace-pre-wrap">
                         {JSON.stringify(currentFormSource?.items, null, 4)}
                     </pre>
                 </div>
                 <div className="flex-1">
                     Current Form item:
-                    <pre className="w-full">
+                    <pre className="break-words whitespace-pre-wrap">
                         {JSON.stringify(values, null, 4)}
                     </pre>
                 </div>

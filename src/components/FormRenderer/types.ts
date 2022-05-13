@@ -81,3 +81,14 @@ export interface FormSource {
     id: string;
     items: FormItem[];
 }
+
+export type FormAnswer = {
+    answers?: string | string[];
+} & FormItem;
+
+export type FormValues = Record<string, string | string[]>;
+
+export interface FormResult {
+    id: string;
+    items: FormAnswer[];
+}

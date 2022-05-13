@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FormSource } from '../../components/FormBuilder/types';
+import { FormSource } from '../../components/FormRenderer/types';
 
 export const useLocalStorage = () => {
     const STORAGE_KEY = 'forms';

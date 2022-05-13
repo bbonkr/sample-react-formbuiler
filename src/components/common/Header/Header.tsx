@@ -14,7 +14,16 @@ const Header = () => {
                         </Link>
                     </p>
                 </div>
-                <div className="flex items-center justify-start">
+
+                <div className="flex items-center justify-start gap-6">
+                    <div className="flex items-center justify-start gap-3">
+                        <Link href="/">
+                            <a className="text-slate-200">Form Builder</a>
+                        </Link>
+                        <Link href="/forms">
+                            <a className="text-slate-200">Forms</a>
+                        </Link>
+                    </div>
                     <div className="flex justify-start items-center">
                         <a
                             className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-center"
