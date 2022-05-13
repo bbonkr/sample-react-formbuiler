@@ -13,7 +13,7 @@ const HomePage = () => {
 
     return (
         <Layout>
-            <Content title={'Home'} />
+            <Content title={'Form Builder'} />
             <hr />
             <FormBuilder />
         </Layout>

@@ -76,3 +76,8 @@ export interface FormItem {
     options?: string;
     isRequired?: boolean;
 }
+
+export interface FormSource {
+    id: string;
+    items: FormItem[];
+}

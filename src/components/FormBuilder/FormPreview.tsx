@@ -60,13 +60,11 @@ const FormPreview = ({
     const [hoverId, setHoverId] = useState<string>();
     const handleMouseEnter =
         (item: FormItem) => (e: React.MouseEvent<HTMLDivElement>) => {
-            console.info(item.id);
             setHoverId((_) => item.id);
         };
 
     const handleMouseLeave =
         (item: FormItem) => (e: React.MouseEvent<HTMLDivElement>) => {
-            console.info(item.id);
             setHoverId((_) => undefined);
         };
 

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { elementTypeItems, elementTypes, inputTypes } from './types';
+import React, { useEffect, useState } from 'react';
+import { elementTypeItems, elementTypes, FormSource } from './types';
 import type { FormItem, ElementType } from './types';
 import { useFormik } from 'formik';
 import FormPreview from './FormPreview';
 import { boolean, object, SchemaOf, string, mixed } from 'yup';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 const validationSchema: SchemaOf<FormItem> = object({
     id: string(),
@@ -15,7 +16,6 @@ const validationSchema: SchemaOf<FormItem> = object({
     description: string(),
     options: string().when('elementType', {
         is: (el) => {
-            console.info(el);
             return el === 'select' || el === 'checkbox' || el === 'radio';
         },
         then: string().required(),
@@ -25,7 +25,10 @@ const validationSchema: SchemaOf<FormItem> = object({
 });
 
 const FormBuilder = () => {
-    const [result, setResult] = useState<FormItem[]>([]);
+    const [currentFormSourceId, setCurrentFormSourceId] = useState<string>();
+    const [currentFormSource, setCurrentFormSource] = useState<FormSource>();
+
+    const { forms, addOrUpdateFormData, removeFormData } = useLocalStorage();
 
     const {
         values,
@@ -53,16 +56,25 @@ const FormBuilder = () => {
                     formItem.id = `${+new Date()}`;
                 }
 
-                setResult((prevState) => {
-                    const index = prevState.findIndex(
+                setCurrentFormSource((prevState) => {
+                    const current = prevState ?? {
+                        id: `${+new Date()}`,
+                        items: [],
+                    };
+
+                    const index = current.items.findIndex(
                         (x) => x.id === formItem.id,
                     );
                     if (index >= 0) {
-                        prevState.splice(index, 1, formItem);
+                        current.items.splice(index, 1, formItem);
                     } else {
-                        prevState.push(formItem);
+                        current.items.push(formItem);
                     }
-                    return [...prevState];
+
+                    return {
+                        ...current,
+                        items: [...current.items],
+                    };
                 });
 
                 helper.resetForm({});
@@ -89,11 +101,15 @@ const FormBuilder = () => {
     };
 
     const handleDelete = (item: FormItem) => {
-        setResult((prevState) => {
-            const index = result.findIndex((x) => x.id === item.id);
+        setCurrentFormSource((prevState) => {
+            const index = prevState.items.findIndex((x) => x.id === item.id);
             if (index >= 0) {
-                prevState.splice(index, 1);
-                return [...prevState];
+                prevState.items.splice(index, 1);
+
+                return {
+                    ...prevState,
+                    items: [...prevState.items],
+                };
             }
 
             return prevState;
@@ -102,17 +118,20 @@ const FormBuilder = () => {
     };
 
     const handleChangeOrder = (item: FormItem, indexToChange: number) => {
-        setResult((prevState) => {
-            if (indexToChange >= 0 && indexToChange < prevState.length) {
-                const currentIndex = prevState.findIndex(
+        setCurrentFormSource((prevState) => {
+            if (indexToChange >= 0 && indexToChange < prevState.items.length) {
+                const currentIndex = prevState.items.findIndex(
                     (x) => x.id === item.id,
                 );
 
                 if (currentIndex >= 0) {
-                    prevState.splice(currentIndex, 1);
-                    prevState.splice(indexToChange, 0, item);
+                    prevState.items.splice(currentIndex, 1);
+                    prevState.items.splice(indexToChange, 0, item);
 
-                    return [...prevState];
+                    return {
+                        ...prevState,
+                        items: [...prevState.items],
+                    };
                 }
             }
 
@@ -120,18 +139,85 @@ const FormBuilder = () => {
         });
     };
 
+    const handleChangeFormSourceSelect = (
+        e: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const formSourceId = e.target.value;
+
+        setCurrentFormSourceId((_) => formSourceId);
+    };
+
+    const handleNewFormSource = () => {
+        setCurrentFormSourceId((_) => '');
+        setCurrentFormSource((_) => ({ id: `${+new Date()}`, items: [] }));
+    };
+
+    const handleSaveFormSource = () => {
+        addOrUpdateFormData(currentFormSource);
+    };
+
+    const handleDeleteFormSource = () => {
+        removeFormData(currentFormSource);
+
+        setCurrentFormSourceId((_) => '');
+    };
+
+    useEffect(() => {
+        if (currentFormSourceId) {
+            const formSource = forms.find((x) => x.id === currentFormSourceId);
+
+            setCurrentFormSource((_) => formSource);
+        } else {
+            setCurrentFormSource((_) => undefined);
+        }
+    }, [currentFormSourceId]);
+
     return (
         <div>
+            <div className="flex flex-row justify-center items-stretch gap-3">
+                <div className="flex-1">
+                    <select
+                        className="w-full"
+                        onChange={handleChangeFormSourceSelect}
+                        value={currentFormSourceId}
+                    >
+                        <option value="">Select form</option>
+                        {forms?.map((item) => {
+                            return (
+                                <option key={item.id} value={item.id}>
+                                    {item.id}
+                                </option>
+                            );
+                        })}
+                    </select>
+                </div>
+                <div className="flex gap-3">
+                    <button className="button" onClick={handleNewFormSource}>
+                        New
+                    </button>
+                    <button
+                        className="button danger"
+                        onClick={handleDeleteFormSource}
+                    >
+                        Delete
+                    </button>
+                    <button className="button" onClick={handleSaveFormSource}>
+                        Save
+                    </button>
+                </div>
+            </div>
             <div className="flex flex-row w-full gap-3">
                 <div className="flex-1">
+                    <h2 className="font-extrabold my-2">Preview</h2>
                     <FormPreview
-                        formItems={result}
+                        formItems={currentFormSource?.items}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onChangeOrder={handleChangeOrder}
                     />
                 </div>
                 <div className="flex-1 ">
+                    <h2 className="font-extrabold my-2">Form Item</h2>
                     <form
                         onSubmit={handleSubmit}
                         onReset={handleReset}
@@ -260,7 +346,7 @@ const FormBuilder = () => {
                 <div className="flex-1">
                     Result:
                     <pre className="w-full">
-                        {JSON.stringify(result, null, 4)}
+                        {JSON.stringify(currentFormSource?.items, null, 4)}
                     </pre>
                 </div>
                 <div className="flex-1">
