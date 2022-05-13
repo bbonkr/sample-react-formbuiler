@@ -40,6 +40,7 @@ const FormBuilder = () => {
         setValues,
         setFieldValue,
         setFieldError,
+        resetForm,
     } = useFormik<Partial<FormItem>>({
         initialValues: {},
         enableReinitialize: true,
@@ -97,6 +98,26 @@ const FormBuilder = () => {
 
             return prevState;
         });
+        resetForm({});
+    };
+
+    const handleChangeOrder = (item: FormItem, indexToChange: number) => {
+        setResult((prevState) => {
+            if (indexToChange >= 0 && indexToChange < prevState.length) {
+                const currentIndex = prevState.findIndex(
+                    (x) => x.id === item.id,
+                );
+
+                if (currentIndex >= 0) {
+                    prevState.splice(currentIndex, 1);
+                    prevState.splice(indexToChange, 0, item);
+
+                    return [...prevState];
+                }
+            }
+
+            return prevState;
+        });
     };
 
     return (
@@ -107,11 +128,13 @@ const FormBuilder = () => {
                         formItems={result}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        onChangeOrder={handleChangeOrder}
                     />
                 </div>
                 <div className="flex-1 ">
                     <form
                         onSubmit={handleSubmit}
+                        onReset={handleReset}
                         className="flex flex-col gap-3"
                     >
                         <input
@@ -211,25 +234,41 @@ const FormBuilder = () => {
                                     className="form-control"
                                     type="checkbox"
                                     {...getFieldProps('isRequired')}
+                                    checked={values.isRequired ?? false}
                                 />
                                 {' This field is required'}
                             </label>
                         </div>
-                        <div className="flex flex-col my-6">
+                        <div className="flex flex-row justify-center items-stretch my-6">
+                            {values.id && (
+                                <button className="button flex-1" type="reset">
+                                    Reset
+                                </button>
+                            )}
                             <button
-                                className="button primary"
+                                className="button primary flex-1"
                                 type="submit"
                                 disabled={!isValid}
                             >
-                                Add Field
+                                {values.id ? 'Update' : 'Add'} Field
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
-            <div>
-                Result:
-                <pre className="w-full">{JSON.stringify(result, null, 4)}</pre>
+            <div className="flex flex-row justify-center items-stretch">
+                <div className="flex-1">
+                    Result:
+                    <pre className="w-full">
+                        {JSON.stringify(result, null, 4)}
+                    </pre>
+                </div>
+                <div className="flex-1">
+                    Current Form item:
+                    <pre className="w-full">
+                        {JSON.stringify(values, null, 4)}
+                    </pre>
+                </div>
             </div>
         </div>
     );

@@ -5,6 +5,7 @@ interface FormPreviewProps {
     formItems?: FormItem[];
     onEdit?: (item: FormItem) => void;
     onDelete?: (item: FormItem) => void;
+    onChangeOrder?: (item: FormItem, index: number) => void;
 }
 
 interface RendererProps {
@@ -39,11 +40,23 @@ const InputRenderer = ({ item, type, id }: RendererProps) => {
             </div>
         );
     } else {
-        return <input type={type.inputType} id={id} name={item.name} />;
+        return (
+            <input
+                type={type.inputType}
+                id={id}
+                name={item.name}
+                required={item.isRequired}
+            />
+        );
     }
 };
 
-const FormPreview = ({ formItems, onEdit, onDelete }: FormPreviewProps) => {
+const FormPreview = ({
+    formItems,
+    onEdit,
+    onDelete,
+    onChangeOrder,
+}: FormPreviewProps) => {
     const [hoverId, setHoverId] = useState<string>();
     const handleMouseEnter =
         (item: FormItem) => (e: React.MouseEvent<HTMLDivElement>) => {
@@ -69,11 +82,22 @@ const FormPreview = ({ formItems, onEdit, onDelete }: FormPreviewProps) => {
         }
     };
 
+    const handleChangeOrder = (item: FormItem, indexToChange: number) => () => {
+        if (onChangeOrder) {
+            onChangeOrder(item, indexToChange);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-3">
-            {formItems?.map((item) => {
+            {formItems?.map((item, index, arr) => {
                 const labelId = `${item.id}-label`;
                 const controlId = `${item.id}-control`;
+
+                const allowsUp = index > 0;
+                const allowsDown = index < arr.length - 1;
+                const indexToUp = index - 1;
+                const indexToDown = index + 1;
 
                 const inputTypeItem = elementTypeItems.find(
                     (x) => x.type === item.elementType,
@@ -93,6 +117,11 @@ const FormPreview = ({ formItems, onEdit, onDelete }: FormPreviewProps) => {
                         >
                             {item.label}
                         </label>
+                        {item.isRequired && (
+                            <p className="my-1 text-red-400">
+                                * This field has to answer.
+                            </p>
+                        )}
                         {item.description && (
                             <p className="font-thin my-1">{item.description}</p>
                         )}
@@ -104,7 +133,11 @@ const FormPreview = ({ formItems, onEdit, onDelete }: FormPreviewProps) => {
                                 id={controlId}
                             />
                         ) : inputTypeItem.element === 'select' ? (
-                            <select id={controlId} name={item.name}>
+                            <select
+                                id={controlId}
+                                name={item.name}
+                                required={item.isRequired}
+                            >
                                 {!item.isRequired && (
                                     <option value="">
                                         {'Please select item'}
@@ -120,7 +153,11 @@ const FormPreview = ({ formItems, onEdit, onDelete }: FormPreviewProps) => {
                                     ))}
                             </select>
                         ) : inputTypeItem.element === 'textarea' ? (
-                            <textarea id={controlId} name={item.name} />
+                            <textarea
+                                id={controlId}
+                                name={item.name}
+                                required={item.isRequired}
+                            />
                         ) : (
                             <div></div>
                         )}
@@ -131,6 +168,28 @@ const FormPreview = ({ formItems, onEdit, onDelete }: FormPreviewProps) => {
                             }`}
                         >
                             <div className="flex flex-row gap-3 my-3">
+                                {allowsUp && (
+                                    <button
+                                        className="button"
+                                        onClick={handleChangeOrder(
+                                            item,
+                                            indexToUp,
+                                        )}
+                                    >
+                                        Up
+                                    </button>
+                                )}
+                                {allowsDown && (
+                                    <button
+                                        className="button"
+                                        onClick={handleChangeOrder(
+                                            item,
+                                            indexToDown,
+                                        )}
+                                    >
+                                        Down
+                                    </button>
+                                )}
                                 <button
                                     className="button"
                                     onClick={handleEdit(item)}
