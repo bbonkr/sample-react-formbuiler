@@ -9,7 +9,7 @@ export const useLocalStorage = () => {
         const formsText = window.localStorage.getItem(STORAGE_KEY);
         const formData = JSON.parse(formsText) as FormSource[];
 
-        setForms((_) => formData);
+        setForms((_) => formData ?? []);
     }, []);
 
     const addOrUpdateFormData = (formData: FormSource) => {
