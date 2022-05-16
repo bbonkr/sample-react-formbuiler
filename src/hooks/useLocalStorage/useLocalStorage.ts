@@ -10,11 +10,9 @@ import { rootActions } from '../../store/actions';
 
 export const useLocalStorage = () => {
     const dispatch = useDispatch();
+
     const STORAGE_KEY_FORMS = 'forms';
     const STORAGE_KEY_RESULTS = 'results';
-
-    // const [forms, setForms] = useState<FormSource[]>([]);
-    // const [results, setResults] = useState<FormResult[]>([]);
 
     const { forms } = useSelector<RootState, FormSourceState>(
         (s) => s.sourceState,
@@ -31,9 +29,6 @@ export const useLocalStorage = () => {
             window.localStorage.getItem(STORAGE_KEY_RESULTS);
         const formResults = JSON.parse(formResultsText) as FormResult[];
 
-        // setForms((_) => formData ?? []);
-        // setResults((_) => formResults ?? []);
-
         dispatch(rootActions.source.intialize(formData ?? []));
         dispatch(rootActions.result.intialize(formResults ?? []));
     }, []);
@@ -43,66 +38,18 @@ export const useLocalStorage = () => {
     };
 
     const addOrUpdateFormData = (formData: FormSource) => {
-        // setForms((prevState) => {
-        //     const current = prevState ?? [];
-        //     const index = current.findIndex((x) => x.id === formData.id);
-
-        //     if (index >= 0) {
-        //         current.splice(index, 1, formData);
-        //     } else {
-        //         current.push(formData);
-        //     }
-        //     return [...current];
-        // });
         dispatch(rootActions.source.addOrUpdate(formData));
     };
 
     const removeFormData = (formData: FormSource) => {
-        // setForms((prevState) => {
-        //     const current = prevState ?? [];
-        //     const index = current.findIndex((x) => x.id === formData.id);
-
-        //     if (index >= 0) {
-        //         current.splice(index, 1);
-
-        //         return [...current];
-        //     }
-
-        //     return current;
-        // });
         dispatch(rootActions.source.reomve(formData));
     };
 
     const addOrUpdateFormResult = (data: FormResult) => {
-        // setResults((prevState) => {
-        //     const current = prevState ?? [];
-        //     const index = current.findIndex((x) => x.id === data.id);
-
-        //     if (index >= 0) {
-        //         current.splice(index, 1, data);
-        //     } else {
-        //         current.push(data);
-        //     }
-
-        //     return [...current];
-        // });
         dispatch(rootActions.result.addOrUpdate(data));
     };
 
     const removeFormResult = (data: FormResult) => {
-        // setResults((prevState) => {
-        //     const current = prevState ?? [];
-        //     const index = current.findIndex((x) => x.id === data.id);
-
-        //     if (index >= 0) {
-        //         current.splice(index, 1);
-
-        //         return [...current];
-        //     }
-
-        //     return current;
-        // });
-
         dispatch(rootActions.result.reomve(data));
     };
 

@@ -3,6 +3,7 @@ export const elementTypes = [
     'date',
     'datetime',
     'time',
+    'email',
     'number-int',
     'number-float',
     'select',
@@ -34,6 +35,7 @@ export const elementTypeItems: ElementTypeItem[] = [
     },
     { type: 'date', name: 'Date', element: 'input', inputType: 'date' },
     { type: 'time', name: 'Time', element: 'input', inputType: 'time' },
+    { type: 'email', name: 'Email', element: 'input', inputType: 'email' },
     {
         type: 'number-int',
         name: 'Integer number',
@@ -90,5 +92,6 @@ export type FormValues = Record<string, string | string[]>;
 
 export interface FormResult {
     id: string;
+    formId: string;
     items: FormAnswer[];
 }

@@ -13,13 +13,14 @@ const ResultList = ({ records }: ResultListProps) => {
                 <thead>
                     <tr className="border-y-2">
                         <th className="py-2">Id</th>
+                        <th className="py-2">Form</th>
                         <th className="py-2">Link</th>
                     </tr>
                 </thead>
                 <tbody>
                     {!records || records?.length === 0 ? (
                         <tr>
-                            <td className="text-center" colSpan={2}>
+                            <td className="text-center" colSpan={3}>
                                 No item
                             </td>
                         </tr>
@@ -30,6 +31,13 @@ const ResultList = ({ records }: ResultListProps) => {
                                     <tr key={item.id} className="">
                                         <td className="text-center py-1">
                                             {item.id}
+                                        </td>
+                                        <td className="text-center py-1">
+                                            <Link
+                                                href={`/forms/${item.formId}`}
+                                            >
+                                                <a>{item.formId}</a>
+                                            </Link>
                                         </td>
                                         <td className="text-center py-1">
                                             <Link href={`/results/${item.id}`}>
