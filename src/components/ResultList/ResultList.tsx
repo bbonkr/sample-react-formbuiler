@@ -32,7 +32,7 @@ const ResultList = ({ records }: ResultListProps) => {
                                         <td className="text-center py-1">
                                             {item.id}
                                         </td>
-                                        <td>
+                                        <td className="text-center py-1">
                                             <Link
                                                 href={`/forms/${item.formId}`}
                                             >
