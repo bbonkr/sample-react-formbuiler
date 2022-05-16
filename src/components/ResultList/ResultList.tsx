@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import React from 'react';
-import { FormSource } from '../FormRenderer';
+import { FormResult } from '../FormRenderer';
 
-interface FormsListProps {
-    records?: FormSource[];
+interface ResultListProps {
+    records?: FormResult[];
 }
 
-const FormsList = ({ records }: FormsListProps) => {
+const ResultList = ({ records }: ResultListProps) => {
     return (
         <div>
             <table className="table w-full">
@@ -17,7 +17,7 @@ const FormsList = ({ records }: FormsListProps) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {!records || records.length === 0 ? (
+                    {!records || records?.length === 0 ? (
                         <tr>
                             <td className="text-center" colSpan={2}>
                                 No item
@@ -32,8 +32,8 @@ const FormsList = ({ records }: FormsListProps) => {
                                             {item.id}
                                         </td>
                                         <td className="text-center py-1">
-                                            <Link href={`/forms/${item.id}`}>
-                                                <a>Form link {item.id}</a>
+                                            <Link href={`/results/${item.id}`}>
+                                                <a>Result link {item.id}</a>
                                             </Link>
                                         </td>
                                     </tr>
@@ -47,4 +47,4 @@ const FormsList = ({ records }: FormsListProps) => {
     );
 };
 
-export default FormsList;
+export default ResultList;

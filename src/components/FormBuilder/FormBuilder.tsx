@@ -9,6 +9,7 @@ import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
 import { boolean, object, SchemaOf, string, mixed } from 'yup';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import ImportData from '../ImportData';
 
 const validationSchema: SchemaOf<FormItem> = object({
     id: string(),
@@ -69,15 +70,16 @@ const FormBuilder = () => {
                     const index = current.items.findIndex(
                         (x) => x.id === formItem.id,
                     );
+                    const temp = [...current.items];
                     if (index >= 0) {
-                        current.items.splice(index, 1, formItem);
+                        temp.splice(index, 1, formItem);
                     } else {
-                        current.items.push(formItem);
+                        temp.push(formItem);
                     }
 
                     return {
                         ...current,
-                        items: [...current.items],
+                        items: [...temp],
                     };
                 });
 
@@ -114,11 +116,9 @@ const FormBuilder = () => {
         setCurrentFormSource((prevState) => {
             const index = prevState.items.findIndex((x) => x.id === item.id);
             if (index >= 0) {
-                prevState.items.splice(index, 1);
-
                 return {
                     ...prevState,
-                    items: [...prevState.items],
+                    items: [...prevState.items.filter((x) => x.id !== item.id)],
                 };
             }
 
@@ -135,12 +135,13 @@ const FormBuilder = () => {
                 );
 
                 if (currentIndex >= 0) {
-                    prevState.items.splice(currentIndex, 1);
-                    prevState.items.splice(indexToChange, 0, item);
+                    const temp = [...prevState.items];
+                    temp.splice(currentIndex, 1);
+                    temp.splice(indexToChange, 0, item);
 
                     return {
                         ...prevState,
-                        items: [...prevState.items],
+                        items: [...temp],
                     };
                 }
             }
@@ -164,6 +165,7 @@ const FormBuilder = () => {
 
     const handleSaveFormSource = () => {
         addOrUpdateFormData(currentFormSource);
+        setCurrentFormSourceId((_) => currentFormSource.id);
     };
 
     const handleDeleteFormSource = () => {
@@ -175,7 +177,7 @@ const FormBuilder = () => {
     useEffect(() => {
         if (currentFormSourceId) {
             const formSource = forms.find((x) => x.id === currentFormSourceId);
-
+            // console.info('formSource:', formSource);
             setCurrentFormSource((_) => formSource);
         } else {
             setCurrentFormSource((_) => undefined);
@@ -201,7 +203,9 @@ const FormBuilder = () => {
                         })}
                     </select>
                 </div>
+
                 <div className="flex gap-3">
+                    <ImportData />
                     <button className="button" onClick={handleNewFormSource}>
                         New
                     </button>

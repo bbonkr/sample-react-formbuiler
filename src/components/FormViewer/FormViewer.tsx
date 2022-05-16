@@ -7,6 +7,7 @@ import {
     FormResult,
     FormSource,
 } from '../FormRenderer/types';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface FormViewerProps {
     record: FormSource;
@@ -15,6 +16,7 @@ interface FormViewerProps {
 type FormValues = Record<string, string | string[]>;
 
 const FormViewer = ({ record }: FormViewerProps) => {
+    const { addOrUpdateFormResult } = useLocalStorage();
     const [result, setResult] = useState<FormResult>();
 
     const validateItem = (
@@ -44,7 +46,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
     ): boolean => {
         let isVaild = true;
         source.items.forEach((item) => {
-            console.info('validateFormValues', values[item.name]);
+            // console.info('validateFormValues', values[item.name]);
             const valid = validateItem(item, values[item.name]);
             isVaild = isVaild && valid;
         });
@@ -60,21 +62,21 @@ const FormViewer = ({ record }: FormViewerProps) => {
             onSubmit: async (v, helper) => {
                 const isValid = validateFormValues(record, v);
                 if (isValid) {
-                    setResult((_) => {
-                        const next: FormResult = {
-                            id: record.id,
-                            items: record.items.map((item) => {
-                                const answer: FormAnswer = {
-                                    ...item,
-                                    answers: v[item.name],
-                                };
+                    const result: FormResult = {
+                        id: record.id,
+                        items: record.items.map((item) => {
+                            const answer: FormAnswer = {
+                                ...item,
+                                answers: v[item.name],
+                            };
 
-                                return answer;
-                            }),
-                        };
+                            return answer;
+                        }),
+                    };
 
-                        return next;
-                    });
+                    setResult((_) => result);
+
+                    addOrUpdateFormResult(result);
                 }
             },
         });
