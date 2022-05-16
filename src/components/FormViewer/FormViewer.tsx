@@ -8,6 +8,7 @@ import {
     FormSource,
 } from '../FormRenderer/types';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { string } from 'yup';
 
 interface FormViewerProps {
     record: FormSource;
@@ -37,6 +38,16 @@ const FormViewer = ({ record }: FormViewerProps) => {
                 return false;
             }
         }
+
+        if (item.elementType === 'email') {
+            const validator = string().email();
+            try {
+                validator.validateSync(value);
+            } catch (e) {
+                setFieldError(item.name, 'Please input valid email format.');
+            }
+        }
+
         return true;
     };
 

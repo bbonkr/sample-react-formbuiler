@@ -111,9 +111,7 @@ FormRendererProps) => {
                             </span>
                         </label>
                         {item.isRequired && (
-                            <p className="my-1 text-red-400">
-                                * This field has to answer.
-                            </p>
+                            <p className="my-1 text-red-400">* Required</p>
                         )}
                         {item.description && (
                             <p className="font-thin my-1">{item.description}</p>
