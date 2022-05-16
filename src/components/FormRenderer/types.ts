@@ -92,5 +92,6 @@ export type FormValues = Record<string, string | string[]>;
 
 export interface FormResult {
     id: string;
+    formId: string;
     items: FormAnswer[];
 }

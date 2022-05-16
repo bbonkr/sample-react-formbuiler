@@ -74,7 +74,8 @@ const FormViewer = ({ record }: FormViewerProps) => {
                 const isValid = validateFormValues(record, v);
                 if (isValid) {
                     const result: FormResult = {
-                        id: record.id,
+                        id: `${+new Date()}`,
+                        formId: record.id,
                         items: record.items.map((item) => {
                             const answer: FormAnswer = {
                                 ...item,
