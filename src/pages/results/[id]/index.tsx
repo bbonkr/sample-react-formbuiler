@@ -2,37 +2,37 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../../components/common/Layout';
 import Content from '../../../components/Content';
-import FormViewer from '../../../components/FormViewer';
 import { useLocalStorage } from '../../../hooks/useLocalStorage';
-import { FormSource } from '../../../components/FormRenderer/types';
+import { FormResult } from '../../../components/FormRenderer/types';
+import ResultViewer from '../../../components/ResultViewer/ResultViewer';
 
-const FormItemPage = () => {
-    const { forms } = useLocalStorage();
+const ResultItemPage = () => {
+    const { results } = useLocalStorage();
     const router = useRouter();
 
-    const [formSource, setFormSource] = useState<FormSource>();
+    const [result, setResult] = useState<FormResult>();
 
     const handleClickNavigate = useCallback(() => {
         router.push('/about');
     }, []);
 
     useEffect(() => {
-        if (forms) {
+        if (results) {
             const { id } = router.query;
             if (typeof id === 'string') {
-                const currentFormSource = forms.find((x) => x.id === id);
-                setFormSource((_) => currentFormSource);
+                const current = results.find((x) => x.id === id);
+                setResult((_) => current);
             }
         }
-    }, [forms, router.query]);
+    }, [results, router.query]);
 
     return (
         <Layout>
-            <Content title={'Forms'} />
+            <Content title={'Result'} />
             <hr />
-            {formSource && <FormViewer record={formSource} />}
+            {result && <ResultViewer record={result} />}
         </Layout>
     );
 };
 
-export default FormItemPage;
+export default ResultItemPage;

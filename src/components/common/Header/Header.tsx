@@ -23,6 +23,9 @@ const Header = () => {
                         <Link href="/forms">
                             <a className="text-slate-200">Forms</a>
                         </Link>
+                        <Link href="/results">
+                            <a className="text-slate-200">Results</a>
+                        </Link>
                     </div>
                     <div className="flex justify-start items-center">
                         <a

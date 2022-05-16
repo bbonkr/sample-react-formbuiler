@@ -1,19 +1,19 @@
 import React from 'react';
 import Layout from '../../components/common/Layout';
 import Content from '../../components/Content';
-import FormsList from '../../components/FormsList';
+import ResultList from '../../components/ResultList/ResultList';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
-const FormListPage = () => {
-    const { forms } = useLocalStorage();
+const ResultListPage = () => {
+    const { results } = useLocalStorage();
 
     return (
         <Layout>
-            <Content title={'Forms List'} />
+            <Content title={'Result List'} />
             <hr />
-            <FormsList records={forms} />
+            <ResultList records={results} />
         </Layout>
     );
 };
 
-export default FormListPage;
+export default ResultListPage;
