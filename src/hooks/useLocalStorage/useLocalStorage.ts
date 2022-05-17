@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { FormResult, FormSource } from '../../components/FormRenderer/types';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import {
     FormResultState,
     FormSourceState,
@@ -16,9 +16,11 @@ export const useLocalStorage = () => {
 
     const { forms } = useSelector<RootState, FormSourceState>(
         (s) => s.sourceState,
+        shallowEqual,
     );
     const { results } = useSelector<RootState, FormResultState>(
         (s) => s.resultState,
+        shallowEqual,
     );
 
     useEffect(() => {
