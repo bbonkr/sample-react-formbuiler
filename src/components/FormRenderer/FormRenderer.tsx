@@ -95,11 +95,19 @@ FormRendererProps) => {
 
                 return (
                     <div
-                        className="flex flex-col relative"
+                        className="flex flex-col gap-1 relative border-2 px-4 py-2 rounded border-slate-200"
                         key={item.id}
                         onMouseEnter={handleMouseEnter(item)}
                         onMouseLeave={handleMouseLeave(item)}
                     >
+                        {!readonly && (
+                            <dl className="font-mono text-sm flex flex-row gap-3">
+                                <dt>Id:</dt>
+                                <dd>{item.id}</dd>
+                                <dt>Field name:</dt>
+                                <dd>{item.name}</dd>
+                            </dl>
+                        )}
                         <label
                             id={labelId}
                             htmlFor={controlId}
@@ -133,6 +141,7 @@ FormRendererProps) => {
                                 required={item.isRequired}
                                 onChange={handleChangeDefault(item)}
                                 value={values ? values[item.name] ?? '' : ''}
+                                placeholder={item.placeholder}
                             >
                                 <option value="">{'Please select item'}</option>
 
@@ -152,6 +161,7 @@ FormRendererProps) => {
                                 required={item.isRequired}
                                 onChange={handleChangeDefault(item)}
                                 value={values ? values[item.name] ?? '' : ''}
+                                placeholder={item.placeholder}
                             />
                         ) : (
                             <div></div>
