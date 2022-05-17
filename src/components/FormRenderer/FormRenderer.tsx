@@ -95,7 +95,7 @@ FormRendererProps) => {
 
                 return (
                     <div
-                        className="flex flex-col relative border-2 px-4 py-2 rounded border-slate-200"
+                        className="flex flex-col gap-1 relative border-2 px-4 py-2 rounded border-slate-200"
                         key={item.id}
                         onMouseEnter={handleMouseEnter(item)}
                         onMouseLeave={handleMouseLeave(item)}
