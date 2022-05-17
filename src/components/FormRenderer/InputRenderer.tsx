@@ -110,6 +110,7 @@ export const InputRenderer = ({
                 required={item.isRequired}
                 onChange={handleChangeValue}
                 value={values ? values[item.name] ?? '' : ''}
+                placeholder={item.placeholder}
             />
         );
     }

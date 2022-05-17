@@ -74,9 +74,9 @@ export interface FormItem {
     description?: string;
     elementType: ElementType;
     name: string;
-    // inputType?: InputTypes;
     options?: string;
     isRequired?: boolean;
+    placeholder?: string;
 }
 
 export interface FormSource {

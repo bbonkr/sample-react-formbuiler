@@ -27,6 +27,7 @@ const validationSchema: SchemaOf<FormItem> = object({
     }),
     isRequired: boolean(),
     inputType: string(),
+    placeholder: string(),
 });
 
 const FormBuilder = () => {
@@ -61,29 +62,46 @@ const FormBuilder = () => {
                     formItem.id = `${+new Date()}`;
                 }
 
-                setCurrentFormSource((prevState) => {
-                    const current = prevState ?? {
-                        id: `${+new Date()}`,
-                        items: [],
-                    };
-
-                    const index = current.items.findIndex(
-                        (x) => x.id === formItem.id,
-                    );
-                    const temp = [...current.items];
-                    if (index >= 0) {
-                        temp.splice(index, 1, formItem);
-                    } else {
-                        temp.push(formItem);
+                let hasSameName = false;
+                currentFormSource?.items?.forEach((item) => {
+                    if (
+                        item.id !== formItem.id &&
+                        item.name === formItem.name
+                    ) {
+                        hasSameName = true;
                     }
-
-                    return {
-                        ...current,
-                        items: [...temp],
-                    };
                 });
 
-                helper.resetForm({});
+                if (hasSameName) {
+                    setFieldError(
+                        'name',
+                        'Name field has to need unique value',
+                    );
+                } else {
+                    setCurrentFormSource((prevState) => {
+                        const current = prevState ?? {
+                            id: `${+new Date()}`,
+                            items: [],
+                        };
+
+                        const index = current.items.findIndex(
+                            (x) => x.id === formItem.id,
+                        );
+                        const temp = [...current.items];
+                        if (index >= 0) {
+                            temp.splice(index, 1, formItem);
+                        } else {
+                            temp.push(formItem);
+                        }
+
+                        return {
+                            ...current,
+                            items: [...temp],
+                        };
+                    });
+
+                    helper.resetForm({});
+                }
             }
         },
         onReset: (v, helper) => {},
@@ -172,6 +190,22 @@ const FormBuilder = () => {
         removeFormData(currentFormSource);
 
         setCurrentFormSourceId((_) => '');
+    };
+
+    const handleChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const nameValue = e.target.value;
+        let hasSameName = false;
+        currentFormSource?.items?.forEach((item) => {
+            if (item.id !== values.id && item.name === nameValue) {
+                hasSameName = true;
+            }
+        });
+
+        if (hasSameName) {
+            setFieldError('name', 'Name field has to need unique value');
+        }
+
+        handleChange(e);
     };
 
     useEffect(() => {
@@ -281,6 +315,23 @@ const FormBuilder = () => {
                                 value={values.label ?? ''}
                             />
                         </div>
+
+                        <div className="flex flex-col">
+                            <label>
+                                Placeholder:
+                                <span className="text-red-500">
+                                    {' '}
+                                    {errors.placeholder}
+                                </span>
+                            </label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                {...getFieldProps('placeholder')}
+                                value={values.placeholder ?? ''}
+                            />
+                        </div>
+
                         <div className="flex flex-col">
                             <label>Description:</label>
                             <textarea
@@ -299,6 +350,7 @@ const FormBuilder = () => {
                             <input
                                 type="text"
                                 {...getFieldProps('name')}
+                                onChange={handleChangeName}
                                 value={values.name ?? ''}
                             />
                         </div>
