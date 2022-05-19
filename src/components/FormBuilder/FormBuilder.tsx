@@ -255,7 +255,7 @@ const FormBuilder = () => {
                 </div>
 
                 <div className="flex gap-3">
-                    <ImportData />
+                    {/* <ImportData /> */}
                     <button className="button" onClick={handleNewFormSource}>
                         New
                     </button>

@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
+// import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { FormSource } from '../FormRenderer';
 
 const ImportData = () => {
-    const { bulkImport } = useLocalStorage();
+    // const { bulkImport } = useLocalStorage();
     const inputFileRef = useRef<HTMLInputElement>();
 
     const handleReaderLoad = (e: ProgressEvent<FileReader>) => {
@@ -11,7 +11,7 @@ const ImportData = () => {
         const sources = JSON.parse(jsonString) as FormSource[];
 
         if (sources) {
-            bulkImport(sources);
+            // bulkImport(sources);
             console.info('done');
         }
 
