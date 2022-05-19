@@ -51,5 +51,21 @@ const forms = createReducer<FormSource[], RootAction>([])
         }),
     );
 
-export const formSourceState = combineReducers({ forms });
+const form = createReducer<FormSource | null, RootAction>(null).handleAction(
+    [rootActions.source.setCurrentForm],
+    (state, action) => action.payload,
+);
+
+const addedOrUpdatedFormId = createReducer<string | null, RootAction>(
+    null,
+).handleAction(
+    [rootActions.source.setAddedOrUpdatedFormSourceId],
+    (_, action) => action.payload,
+);
+
+export const formSourceState = combineReducers({
+    forms,
+    form,
+    addedOrUpdatedFormId,
+});
 export type FormSourceState = ReturnType<typeof formSourceState>;

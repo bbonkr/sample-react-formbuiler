@@ -5,26 +5,28 @@ import Content from '../../../components/Content';
 import { useLocalStorage } from '../../../hooks/useLocalStorage';
 import { FormResult } from '../../../components/FormRenderer/types';
 import ResultViewer from '../../../components/ResultViewer/ResultViewer';
+import { useResultsApi } from '../../../hooks/useResultsApi';
 
 const ResultItemPage = () => {
-    const { results } = useLocalStorage();
+    // const { results } = useLocalStorage();
+    const { result, getResult } = useResultsApi();
+
     const router = useRouter();
 
-    const [result, setResult] = useState<FormResult>();
+    // const [result, setResult] = useState<FormResult>();
 
     const handleClickNavigate = useCallback(() => {
         router.push('/about');
     }, []);
 
     useEffect(() => {
-        if (results) {
-            const { id } = router.query;
-            if (typeof id === 'string') {
-                const current = results.find((x) => x.id === id);
-                setResult((_) => current);
-            }
+        const { id } = router.query;
+        if (typeof id === 'string') {
+            // const current = results.find((x) => x.id === id);
+            // setResult((_) => current);
+            getResult(id);
         }
-    }, [results, router.query]);
+    }, [router.query]);
 
     return (
         <Layout>

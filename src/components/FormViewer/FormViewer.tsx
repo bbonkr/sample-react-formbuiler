@@ -7,8 +7,9 @@ import {
     FormResult,
     FormSource,
 } from '../FormRenderer/types';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
+// import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { string } from 'yup';
+import { useResultsApi } from '../../hooks/useResultsApi';
 
 interface FormViewerProps {
     record: FormSource;
@@ -17,7 +18,9 @@ interface FormViewerProps {
 type FormValues = Record<string, string | string[]>;
 
 const FormViewer = ({ record }: FormViewerProps) => {
-    const { addOrUpdateFormResult } = useLocalStorage();
+    // const { addOrUpdateFormResult } = useLocalStorage();
+    const { addResult } = useResultsApi();
+
     const [result, setResult] = useState<FormResult>();
 
     const validateItem = (
@@ -88,7 +91,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
 
                     setResult((_) => result);
 
-                    addOrUpdateFormResult(result);
+                    addResult(result);
                 }
             },
         });

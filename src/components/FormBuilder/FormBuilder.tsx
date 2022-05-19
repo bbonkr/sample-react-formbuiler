@@ -8,8 +8,9 @@ import type { FormItem, ElementType } from '../FormRenderer/types';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
 import { boolean, object, SchemaOf, string, mixed } from 'yup';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
+// import { useLocalStorage } from '../../hooks/useLocalStorage';
 import ImportData from '../ImportData';
+import { useFormsApi } from '../../hooks/useFormsApi';
 
 const validationSchema: SchemaOf<FormItem> = object({
     id: string(),
@@ -34,7 +35,9 @@ const FormBuilder = () => {
     const [currentFormSourceId, setCurrentFormSourceId] = useState<string>();
     const [currentFormSource, setCurrentFormSource] = useState<FormSource>();
 
-    const { forms, addOrUpdateFormData, removeFormData } = useLocalStorage();
+    // const { addOrUpdateFormData, removeFormData } = useLocalStorage();
+    const { forms, addedOrUpdatedFormId, addForm, updateForm, deleteForm } =
+        useFormsApi();
 
     const {
         values,
@@ -80,7 +83,8 @@ const FormBuilder = () => {
                 } else {
                     setCurrentFormSource((prevState) => {
                         const current = prevState ?? {
-                            id: `${+new Date()}`,
+                            // id: `${+new Date()}`,
+                            id: '',
                             items: [],
                         };
 
@@ -178,16 +182,24 @@ const FormBuilder = () => {
 
     const handleNewFormSource = () => {
         setCurrentFormSourceId((_) => '');
-        setCurrentFormSource((_) => ({ id: `${+new Date()}`, items: [] }));
+        setCurrentFormSource((_) => ({
+            // id: `${+new Date()}`,
+            id: '',
+            items: [],
+        }));
     };
 
     const handleSaveFormSource = () => {
-        addOrUpdateFormData(currentFormSource);
-        setCurrentFormSourceId((_) => currentFormSource.id);
+        if (currentFormSource.id) {
+            updateForm(currentFormSource);
+        } else {
+            addForm(currentFormSource);
+        }
+        // setCurrentFormSourceId((_) => currentFormSource.id);
     };
 
     const handleDeleteFormSource = () => {
-        removeFormData(currentFormSource);
+        deleteForm(currentFormSource);
 
         setCurrentFormSourceId((_) => '');
     };
@@ -217,6 +229,10 @@ const FormBuilder = () => {
             setCurrentFormSource((_) => undefined);
         }
     }, [currentFormSourceId]);
+
+    useEffect(() => {
+        setCurrentFormSourceId((_) => addedOrUpdatedFormId ?? '');
+    }, [addedOrUpdatedFormId]);
 
     return (
         <div className="flex flex-col">

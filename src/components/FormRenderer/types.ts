@@ -81,6 +81,7 @@ export interface FormItem {
 
 export interface FormSource {
     id: string;
+    title?: string;
     items: FormItem[];
 }
 
