@@ -54,5 +54,10 @@ const results = createReducer<FormResult[], RootAction>([])
         }),
     );
 
-export const formResultState = combineReducers({ results });
+const result = createReducer<FormResult | null, RootAction>(null).handleAction(
+    [rootActions.result.setCurrentResult],
+    (state, action) => action.payload,
+);
+
+export const formResultState = combineReducers({ results, result });
 export type FormResultState = ReturnType<typeof formResultState>;

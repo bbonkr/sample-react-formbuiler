@@ -8,18 +8,21 @@
         "dev": "next dev -p 9000",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "gen": "dotenv -e .env -- openapi-generator-cli generate -i \"http://localhost:5030/swagger/v1/swagger.json\" -g typescript-axios -o src/api -c ./openapi.config.json --enable-post-process-file"
     },
     "keywords": [],
     "author": "Pon Cheol Ku <dev@bbon.kr> (http://bbon.kr/)",
     "license": "MIT",
     "devDependencies": {
+        "@openapitools/openapi-generator-cli": "^2.5.1",
         "@redux-devtools/extension": "^3.2.2",
         "@tailwindcss/forms": "^0.5.1",
         "@tailwindcss/typography": "^0.5.2",
         "@types/react": "^18.0.9",
         "@types/react-dom": "^18.0.3",
         "autoprefixer": "^10.4.0",
+        "dotenv-cli": "^5.1.0",
         "eslint": "^7.32.0",
         "eslint-config-next": "^12.0.4",
         "eslint-config-prettier": "^8.3.0",
@@ -39,6 +42,7 @@
         "react-icons": "^4.3.1",
         "react-redux": "^8.0.1",
         "redux": "^4.2.0",
+        "swr": "^1.3.0",
         "typesafe-actions": "^5.1.0",
         "yup": "^0.32.11"
     }
