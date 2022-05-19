@@ -168,7 +168,7 @@ export const useFormsApi = () => {
     useEffect(() => {
         if (!isLoadingGetForms && pagedFormModels) {
             const formSources = pagedFormModels.items.map((x) => {
-                console.info('x.content:', x.content);
+                // console.info('x.content:', x.content);
 
                 const formSource: FormSource = JSON.parse(
                     x.content,
