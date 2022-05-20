@@ -10,6 +10,7 @@ export const elementTypes = [
     'multi-text-input',
     'checkbox',
     'radio',
+    'file',
 ] as const;
 export type ElementType = typeof elementTypes[number];
 
@@ -62,6 +63,7 @@ export const elementTypeItems: ElementTypeItem[] = [
         element: 'input',
         inputType: 'radio',
     },
+    { type: 'file', name: 'File', element: 'input', inputType: 'file' },
 ];
 
 export const inputTypes = ['text', 'date', 'datetime', 'time'] as const;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormResult } from '../FormRenderer';
+import { DownloadLinkRenderer } from './DownloadLinkRenderer';
 
 interface ResultViewerProps {
     record: FormResult;
@@ -19,11 +20,17 @@ const ResultViewer = ({ record }: ResultViewerProps) => {
                                     {Array.isArray(item.answers) ? (
                                         <ul>
                                             {item.answers.map((a) => (
-                                                <li key={a}>{a}</li>
+                                                <li key={a}>
+                                                    <DownloadLinkRenderer
+                                                        value={a}
+                                                    />
+                                                </li>
                                             ))}
                                         </ul>
                                     ) : (
-                                        item.answers
+                                        <DownloadLinkRenderer
+                                            value={item.answers}
+                                        />
                                     )}
                                 </dd>
                             </React.Fragment>
