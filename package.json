@@ -32,6 +32,7 @@
         "vercel": "^23.1.2"
     },
     "dependencies": {
+        "@bbon/filedownload": "^1.2.3",
         "class-name-prop": "^5.0.0",
         "formik": "^2.2.9",
         "immer": "^9.0.14",

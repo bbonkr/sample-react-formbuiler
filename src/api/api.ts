@@ -62,6 +62,19 @@ export interface AddResultCommand {
 /**
  * 
  * @export
+ * @interface DeleteFileCommand
+ */
+export interface DeleteFileCommand {
+    /**
+     * 
+     * @type {string}
+     * @memberof DeleteFileCommand
+     */
+    uri?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface ErrorModel
  */
 export interface ErrorModel {
@@ -198,6 +211,19 @@ export interface FormModelPagedModel {
 /**
  * 
  * @export
+ * @interface GetFileByUriQuery
+ */
+export interface GetFileByUriQuery {
+    /**
+     * 
+     * @type {string}
+     * @memberof GetFileByUriQuery
+     */
+    uri?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface ResultModel
  */
 export interface ResultModel {
@@ -291,6 +317,49 @@ export interface UpdateFormCommand {
 /**
  * 
  * @export
+ * @interface UploadFileMediaModel
+ */
+export interface UploadFileMediaModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof UploadFileMediaModel
+     */
+    name?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof UploadFileMediaModel
+     */
+    size?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof UploadFileMediaModel
+     */
+    contentType?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UploadFileMediaModel
+     */
+    content?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UploadFileMediaModel
+     */
+    uri?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UploadFileMediaModel
+     */
+    uriForDeletion?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface WeatherForecast
  */
 export interface WeatherForecast {
@@ -313,6 +382,282 @@ export interface WeatherForecast {
      */
     summary?: string | null;
 }
+
+/**
+ * FilesApi - axios parameter creator
+ * @export
+ */
+export const FilesApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {DeleteFileCommand} [deleteFileCommand] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FilesDelete: async (deleteFileCommand?: DeleteFileCommand, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/Files/delete`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(deleteFileCommand, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {GetFileByUriQuery} [getFileByUriQuery] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FilesDownload: async (getFileByUriQuery?: GetFileByUriQuery, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/Files/download`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getFileByUriQuery, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {Array<any>} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FilesUpload: async (files?: Array<any>, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/Files`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            if (files) {
+                files.forEach((element) => {
+                    localVarFormParams.append('files', element as any);
+                })
+            }
+
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * FilesApi - functional programming interface
+ * @export
+ */
+export const FilesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = FilesApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {DeleteFileCommand} [deleteFileCommand] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiv10FilesDelete(deleteFileCommand?: DeleteFileCommand, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<boolean>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10FilesDelete(deleteFileCommand, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {GetFileByUriQuery} [getFileByUriQuery] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiv10FilesDownload(getFileByUriQuery?: GetFileByUriQuery, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10FilesDownload(getFileByUriQuery, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {Array<any>} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiv10FilesUpload(files?: Array<any>, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<UploadFileMediaModel>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10FilesUpload(files, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * FilesApi - factory interface
+ * @export
+ */
+export const FilesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = FilesApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {DeleteFileCommand} [deleteFileCommand] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FilesDelete(deleteFileCommand?: DeleteFileCommand, options?: any): AxiosPromise<boolean> {
+            return localVarFp.apiv10FilesDelete(deleteFileCommand, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {GetFileByUriQuery} [getFileByUriQuery] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FilesDownload(getFileByUriQuery?: GetFileByUriQuery, options?: any): AxiosPromise<any> {
+            return localVarFp.apiv10FilesDownload(getFileByUriQuery, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {Array<any>} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FilesUpload(files?: Array<any>, options?: any): AxiosPromise<Array<UploadFileMediaModel>> {
+            return localVarFp.apiv10FilesUpload(files, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for apiv10FilesDelete operation in FilesApi.
+ * @export
+ * @interface FilesApiApiv10FilesDeleteRequest
+ */
+export interface FilesApiApiv10FilesDeleteRequest {
+    /**
+     * 
+     * @type {DeleteFileCommand}
+     * @memberof FilesApiApiv10FilesDelete
+     */
+    readonly deleteFileCommand?: DeleteFileCommand
+}
+
+/**
+ * Request parameters for apiv10FilesDownload operation in FilesApi.
+ * @export
+ * @interface FilesApiApiv10FilesDownloadRequest
+ */
+export interface FilesApiApiv10FilesDownloadRequest {
+    /**
+     * 
+     * @type {GetFileByUriQuery}
+     * @memberof FilesApiApiv10FilesDownload
+     */
+    readonly getFileByUriQuery?: GetFileByUriQuery
+}
+
+/**
+ * Request parameters for apiv10FilesUpload operation in FilesApi.
+ * @export
+ * @interface FilesApiApiv10FilesUploadRequest
+ */
+export interface FilesApiApiv10FilesUploadRequest {
+    /**
+     * 
+     * @type {Array<any>}
+     * @memberof FilesApiApiv10FilesUpload
+     */
+    readonly files?: Array<any>
+}
+
+/**
+ * FilesApi - object-oriented interface
+ * @export
+ * @class FilesApi
+ * @extends {BaseAPI}
+ */
+export class FilesApi extends BaseAPI {
+    /**
+     * 
+     * @param {FilesApiApiv10FilesDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FilesApi
+     */
+    public apiv10FilesDelete(requestParameters: FilesApiApiv10FilesDeleteRequest = {}, options?: any) {
+        return FilesApiFp(this.configuration).apiv10FilesDelete(requestParameters.deleteFileCommand, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {FilesApiApiv10FilesDownloadRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FilesApi
+     */
+    public apiv10FilesDownload(requestParameters: FilesApiApiv10FilesDownloadRequest = {}, options?: any) {
+        return FilesApiFp(this.configuration).apiv10FilesDownload(requestParameters.getFileByUriQuery, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {FilesApiApiv10FilesUploadRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FilesApi
+     */
+    public apiv10FilesUpload(requestParameters: FilesApiApiv10FilesUploadRequest = {}, options?: any) {
+        return FilesApiFp(this.configuration).apiv10FilesUpload(requestParameters.files, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
 
 /**
  * FormsApi - axios parameter creator

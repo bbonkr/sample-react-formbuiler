@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { FilesApi, UploadFileMediaModel } from '../../api';
 import { ElementTypeItem, FormItem, FormValues } from './types';
 
 interface RendererProps {
@@ -17,6 +18,9 @@ export const InputRenderer = ({
     values,
     onChange,
 }: RendererProps) => {
+    const baseUrl = process.env.NEXT_PUBLIC_API;
+    const [files, setFiles] = useState<UploadFileMediaModel[]>([]);
+
     const handleChangeValue = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (onChange) {
             const currentValue = e.target.value;
@@ -45,6 +49,31 @@ export const InputRenderer = ({
                         onChange(item, arrayValue);
                     }
                 }
+            } else if (e.target.type === 'file') {
+                // console.info('files', e.target.files);
+                const client = new FilesApi(undefined, baseUrl);
+
+                // const files: File[] = [];
+                // Array.prototype.forEach.call(e.target.files, (item) => {
+                //     console.info('file', item);
+                //     files.push(item);
+                //     // formData.append('files', item);
+                // });
+
+                client
+                    .apiv10FilesUpload({
+                        files: Array.from(e.target.files),
+                    })
+                    .then((response) => {
+                        setFiles((prevState) => {
+                            const tempState = prevState.slice();
+
+                            response.data.forEach((item) => {
+                                tempState.push(item);
+                            });
+                            return [...tempState];
+                        });
+                    });
             } else {
                 // setInputValue((_) => value);
                 onChange(item, currentValue);
@@ -59,6 +88,39 @@ export const InputRenderer = ({
             }
         }
     };
+
+    const handleClickDeleteFile = (file: UploadFileMediaModel) => () => {
+        const client = new FilesApi(undefined, baseUrl);
+        client
+            .apiv10FilesDelete({
+                deleteFileCommand: {
+                    uri: file.uriForDeletion,
+                },
+            })
+            .then((response) => {
+                setFiles((prevState) => {
+                    const tempArray = prevState.slice();
+                    const deletedIndex = tempArray.findIndex(
+                        (x) => x.name === file.name,
+                    );
+                    if (deletedIndex >= 0) {
+                        tempArray.splice(deletedIndex, 1);
+                        return [...tempArray];
+                    }
+
+                    return prevState;
+                });
+            });
+    };
+
+    useEffect(() => {
+        if (onChange) {
+            onChange(
+                item,
+                files.map((x) => x.uri),
+            );
+        }
+    }, [files]);
 
     if (type.element !== 'input') {
         return <React.Fragment />;
@@ -103,15 +165,39 @@ export const InputRenderer = ({
         );
     } else {
         return (
-            <input
-                type={type.inputType}
-                id={id}
-                name={item.name}
-                required={item.isRequired}
-                onChange={handleChangeValue}
-                value={values ? values[item.name] ?? '' : ''}
-                placeholder={item.placeholder}
-            />
+            <React.Fragment>
+                <input
+                    type={type.inputType}
+                    id={id}
+                    name={item.name}
+                    required={item.isRequired}
+                    onChange={handleChangeValue}
+                    value={
+                        values && item.elementType !== 'file'
+                            ? values[item.name] ?? ''
+                            : ''
+                    }
+                    placeholder={item.placeholder}
+                />
+
+                {files && files.length > 0 && (
+                    <ul>
+                        {files.map((file) => {
+                            return (
+                                <li key={file.uri}>
+                                    {file.name}
+                                    <button
+                                        type="button"
+                                        onClick={handleClickDeleteFile(file)}
+                                    >
+                                        Delete
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
+            </React.Fragment>
         );
     }
 };
