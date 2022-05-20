@@ -21,7 +21,7 @@ export const DownloadLinkRenderer = ({ value }: DownloadLinkRendererProps) => {
     const fileName = useMemo(() => {
         if (isUri(value)) {
             const tokens = value.split('/');
-            console.info('tokens:', tokens);
+            // console.info('tokens:', tokens);
             if (tokens.length > 1) {
                 return tokens[tokens.length - 1];
             } else {
