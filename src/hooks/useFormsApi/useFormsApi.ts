@@ -2,25 +2,34 @@ import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import useSwr from 'swr';
 import {
+    FormModel,
     FormsApi,
     FormsApiApiv10FormsGetFormByIdRequest,
     FormsApiApiv10FormsGetFormsRequest,
 } from '../../api';
-import { FormSource } from '../../components/FormRenderer';
+// import { FormSource } from '../../components/FormRenderer';
 import { rootActions } from '../../store/actions';
 import { FormSourceState, RootState } from '../../store/reducers';
 
 export const useFormsApi = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API ?? '';
-    const { forms } = useSelector<RootState, FormSourceState>(
+    // const { forms } = useSelector<RootState, FormSourceState>(
+    //     (s) => s.sourceState,
+    // );
+
+    const { formModel } = useSelector<RootState, FormSourceState>(
+        (s) => s.sourceState,
+    );
+
+    const { formPagedModel } = useSelector<RootState, FormSourceState>(
         (s) => s.sourceState,
     );
     const { addedOrUpdatedFormId } = useSelector<RootState, FormSourceState>(
         (s) => s.sourceState,
     );
-    const { form } = useSelector<RootState, FormSourceState>(
-        (s) => s.sourceState,
-    );
+    // const { form } = useSelector<RootState, FormSourceState>(
+    //     (s) => s.sourceState,
+    // );
     const client = new FormsApi(undefined, baseUrl);
     const dispatch = useDispatch();
 
@@ -96,40 +105,46 @@ export const useFormsApi = () => {
         }
     };
 
-    const addForm = (item: FormSource) => {
+    const addForm = (item: FormModel) => {
         dispatch(rootActions.source.setAddedOrUpdatedFormSourceId(null));
 
         const candidate = { ...item };
+
+        delete candidate.items;
 
         client
             .apiv10FormsAddForm({
                 addFormCommand: {
                     title: candidate.title ?? 'No title',
                     content: JSON.stringify(candidate, null, 4),
+                    items: item.items,
                 },
             })
             .then((response) => {
                 const data = response.data;
-                const addedItem: FormSource = JSON.parse(
-                    data.content,
-                ) as FormSource;
 
-                if (addedItem) {
-                    addedItem.id = data.id;
+                dispatch(rootActions.source.addOrUpdateFormModel(data));
+                dispatch(
+                    rootActions.source.setAddedOrUpdatedFormSourceId(data.id),
+                );
 
-                    dispatch(rootActions.source.addOrUpdate(addedItem));
-                    dispatch(
-                        rootActions.source.setAddedOrUpdatedFormSourceId(
-                            addedItem.id,
-                        ),
-                    );
-                }
+                // const addedItem: FormSource = JSON.parse(
+                //     data.content,
+                // ) as FormSource;
+
+                // if (addedItem) {
+                //     addedItem.id = data.id;
+
+                //     dispatch(rootActions.source.addOrUpdate(addedItem));
+                // }
             });
     };
 
-    const updateForm = (item: FormSource) => {
+    const updateForm = (item: FormModel) => {
         dispatch(rootActions.source.setAddedOrUpdatedFormSourceId(null));
         const candidate = { ...item };
+
+        delete candidate.items;
 
         client
             .apiv10FormsUpdateForm({
@@ -137,73 +152,88 @@ export const useFormsApi = () => {
                     id: candidate.id,
                     title: candidate.title ?? 'No title',
                     content: JSON.stringify(candidate, null, 4),
+                    items: item.items,
                 },
             })
             .then((response) => {
                 const data = response.data;
-                const updatedItem: FormSource = JSON.parse(
-                    data.content,
-                ) as FormSource;
 
-                if (updatedItem) {
-                    updatedItem.id = data.id;
+                dispatch(rootActions.source.addOrUpdateFormModel(data));
+                dispatch(
+                    rootActions.source.setAddedOrUpdatedFormSourceId(data.id),
+                );
 
-                    dispatch(rootActions.source.addOrUpdate(updatedItem));
-                    dispatch(
-                        rootActions.source.setAddedOrUpdatedFormSourceId(
-                            updatedItem.id,
-                        ),
-                    );
-                }
+                // const updatedItem: FormSource = JSON.parse(
+                //     data.content,
+                // ) as FormSource;
+
+                // if (updatedItem) {
+                //     updatedItem.id = data.id;
+
+                //     dispatch(rootActions.source.addOrUpdate(updatedItem));
+                //     dispatch(
+                //         rootActions.source.setAddedOrUpdatedFormSourceId(
+                //             updatedItem.id,
+                //         ),
+                //     );
+                // }
             });
     };
 
-    const deleteForm = (item: FormSource) => {
+    const deleteForm = (item: FormModel) => {
         client.apiv10FormsDeleteForm({ id: item.id }).then((response) => {
             console.info('deleted');
-            dispatch(rootActions.source.reomve(item));
+            // dispatch(rootActions.source.reomve(item));
+            dispatch(rootActions.source.removeFormModel(item));
+            dispatch(rootActions.source.setAddedOrUpdatedFormSourceId(''));
         });
     };
 
     useEffect(() => {
         if (!isLoadingGetForms && pagedFormModels) {
-            const formSources = pagedFormModels.items.map((x) => {
-                // console.info('x.content:', x.content);
+            dispatch(rootActions.source.setFormsPagedModel(pagedFormModels));
 
-                const formSource: FormSource = JSON.parse(
-                    x.content,
-                ) as FormSource;
-                formSource.id = x.id;
-                formSource.title = x.title;
-                return formSource;
-            });
+            // const formSources = pagedFormModels.items.map((x) => {
+            //     console.info('x.content:', x.content);
 
-            dispatch(rootActions.source.intialize(formSources ?? []));
+            //     const formSource: FormSource = JSON.parse(
+            //         x.content,
+            //     ) as FormSource;
+            //     formSource.id = x.id;
+            //     formSource.title = x.title;
+            //     return formSource;
+            // });
+
+            // dispatch(rootActions.source.intialize(formSources ?? []));
         }
     }, [pagedFormModels, isLoadingGetForms]);
 
     useEffect(() => {
         if (!isLoadingGetFormById && getFormByIdData) {
-            const formSource: FormSource = JSON.parse(
-                getFormByIdData.content,
-            ) as FormSource;
+            dispatch(rootActions.source.setFormModel(getFormByIdData));
 
-            if (formSource) {
-                formSource.id = getFormByIdData.id;
-                formSource.title = getFormByIdData.title;
+            // const formSource: FormSource = JSON.parse(
+            //     getFormByIdData.content,
+            // ) as FormSource;
 
-                dispatch(rootActions.source.setCurrentForm(formSource));
-            }
+            // if (formSource) {
+            //     formSource.id = getFormByIdData.id;
+            //     formSource.title = getFormByIdData.title;
+
+            //     dispatch(rootActions.source.setCurrentForm(formSource));
+            // }
         }
     }, [getFormByIdData, isLoadingGetFormById]);
 
     return {
         addedOrUpdatedFormId,
-        forms,
+        // forms,
         isLoadingGetForms,
         getFormsError,
         getForms,
-        form,
+        // form,
+        formPagedModel,
+        formModel,
         getForm,
         addForm,
         updateForm,

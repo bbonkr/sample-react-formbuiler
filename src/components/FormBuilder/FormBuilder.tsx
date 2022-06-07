@@ -1,43 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import {
-    elementTypeItems,
-    elementTypes,
-    FormSource,
-} from '../FormRenderer/types';
-import type { FormItem, ElementType } from '../FormRenderer/types';
+import { elementTypeItems } from '../FormRenderer/types';
+import type { ElementType } from '../FormRenderer/types';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
-import { boolean, object, SchemaOf, string, mixed } from 'yup';
-// import { useLocalStorage } from '../../hooks/useLocalStorage';
-import ImportData from '../ImportData';
+import { boolean, object, SchemaOf, string, mixed, number, array } from 'yup';
 import { useFormsApi } from '../../hooks/useFormsApi';
+import {
+    FormItemModel,
+    FormItemOptionModel,
+    FormModel,
+    ElementTypes,
+} from '../../api';
 
-const validationSchema: SchemaOf<FormItem> = object({
+const validationSchema: SchemaOf<FormItemModel> = object({
     id: string(),
-    elementType: mixed<ElementType>()
+    formId: string(),
+    title: string(),
+    elementType: mixed<ElementTypes>()
         .required()
-        .oneOf([...elementTypes]),
+        .oneOf([...Object.values(ElementTypes)]),
     label: string().required(),
     name: string().required(),
     description: string(),
-    options: string().when('elementType', {
-        is: (el) => {
-            return el === 'select' || el === 'checkbox' || el === 'radio';
-        },
-        then: string().required(),
-    }),
+    // options: string().when('elementType', {
+    //     is: (el) => {
+    //         return el === 'select' || el === 'checkbox' || el === 'radio';
+    //     },
+    //     then: string().required(),
+    // }),
+    options: array<FormItemOptionModel>().of(
+        object({
+            id: string(),
+            formItemId: string(),
+            value: string(),
+            text: string(),
+            ordinal: number(),
+        }),
+    ),
     isRequired: boolean(),
     inputType: string(),
     placeholder: string(),
+    ordinal: number(),
 });
 
 const FormBuilder = () => {
     const [currentFormSourceId, setCurrentFormSourceId] = useState<string>();
-    const [currentFormSource, setCurrentFormSource] = useState<FormSource>();
+    const [currentFormSource, setCurrentFormSource] = useState<FormModel>();
 
     // const { addOrUpdateFormData, removeFormData } = useLocalStorage();
-    const { forms, addedOrUpdatedFormId, addForm, updateForm, deleteForm } =
-        useFormsApi();
+    const {
+        formPagedModel,
+        // forms,
+        addedOrUpdatedFormId,
+        addForm,
+        updateForm,
+        deleteForm,
+    } = useFormsApi();
 
     const {
         values,
@@ -53,17 +71,17 @@ const FormBuilder = () => {
         setFieldValue,
         setFieldError,
         resetForm,
-    } = useFormik<Partial<FormItem>>({
+    } = useFormik<Partial<FormItemModel>>({
         initialValues: {},
         enableReinitialize: true,
         validationSchema: validationSchema,
         onSubmit: (v, helper) => {
             if (isValid) {
-                const formItem = v as FormItem;
+                const formItem = v as FormItemModel;
 
-                if (!formItem.id) {
-                    formItem.id = `${+new Date()}`;
-                }
+                // if (!formItem.id) {
+                //     formItem.id = `${+new Date()}`;
+                // }
 
                 let hasSameName = false;
                 currentFormSource?.items?.forEach((item) => {
@@ -91,7 +109,7 @@ const FormBuilder = () => {
                         const index = current.items.findIndex(
                             (x) => x.id === formItem.id,
                         );
-                        const temp = [...current.items];
+                        const temp = current.items.slice();
                         if (index >= 0) {
                             temp.splice(index, 1, formItem);
                         } else {
@@ -100,7 +118,13 @@ const FormBuilder = () => {
 
                         return {
                             ...current,
-                            items: [...temp],
+                            items: [
+                                ...temp.map((t, i) => ({
+                                    ...t,
+                                    formId: current.id,
+                                    ordinal: i + 1,
+                                })),
+                            ],
                         };
                     });
 
@@ -121,7 +145,7 @@ const FormBuilder = () => {
             setFieldError('options', undefined);
         }
 
-        if (selectedElementType === 'radio') {
+        if (selectedElementType === 'Radio') {
             setFieldValue('isRequired', true);
         } else {
             setFieldValue('isRequired', false);
@@ -130,11 +154,11 @@ const FormBuilder = () => {
         handleChange(e);
     };
 
-    const handleEdit = (item: FormItem) => {
+    const handleEdit = (item: FormItemModel) => {
         setValues(item);
     };
 
-    const handleDelete = (item: FormItem) => {
+    const handleDelete = (item: FormItemModel) => {
         setCurrentFormSource((prevState) => {
             const index = prevState.items.findIndex((x) => x.id === item.id);
             if (index >= 0) {
@@ -149,7 +173,7 @@ const FormBuilder = () => {
         resetForm({});
     };
 
-    const handleChangeOrder = (item: FormItem, indexToChange: number) => {
+    const handleChangeOrder = (item: FormItemModel, indexToChange: number) => {
         setCurrentFormSource((prevState) => {
             if (indexToChange >= 0 && indexToChange < prevState.items.length) {
                 const currentIndex = prevState.items.findIndex(
@@ -222,7 +246,10 @@ const FormBuilder = () => {
 
     useEffect(() => {
         if (currentFormSourceId) {
-            const formSource = forms.find((x) => x.id === currentFormSourceId);
+            const formSource = formPagedModel?.items?.find(
+                (x) => x.id === currentFormSourceId,
+            );
+
             // console.info('formSource:', formSource);
             setCurrentFormSource((_) => formSource);
         } else {
@@ -244,10 +271,10 @@ const FormBuilder = () => {
                         value={currentFormSourceId}
                     >
                         <option value="">Select form</option>
-                        {forms?.map((item) => {
+                        {formPagedModel?.items?.map((item) => {
                             return (
                                 <option key={item.id} value={item.id}>
-                                    {item.id}
+                                    {item.id} {item.title}
                                 </option>
                             );
                         })}
@@ -375,14 +402,15 @@ const FormBuilder = () => {
                                 Options:
                                 <span className="text-red-500">
                                     {' '}
-                                    {errors.options}
+                                    {/* // TODO options */}
+                                    {/* {errors.options} */}
                                 </span>
                             </label>
                             <input
                                 type="text"
                                 className="form-input"
                                 {...getFieldProps('options')}
-                                value={values.options ?? ''}
+                                value={values.options?.join(',') ?? ''}
                                 disabled={
                                     !['select', 'checkbox', 'radio'].includes(
                                         values.elementType,
@@ -403,7 +431,7 @@ const FormBuilder = () => {
                                     type="checkbox"
                                     {...getFieldProps('isRequired')}
                                     checked={values.isRequired ?? false}
-                                    disabled={values.elementType === 'radio'}
+                                    disabled={values.elementType === 'Radio'}
                                 />
                                 {' This field is required'}
                             </label>

@@ -1,9 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../../components/common/Layout';
 import Content from '../../../components/Content';
-import { useLocalStorage } from '../../../hooks/useLocalStorage';
-import { FormResult } from '../../../components/FormRenderer/types';
 import ResultViewer from '../../../components/ResultViewer/ResultViewer';
 import { useResultsApi } from '../../../hooks/useResultsApi';
 

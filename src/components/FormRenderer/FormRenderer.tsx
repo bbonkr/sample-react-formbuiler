@@ -1,18 +1,19 @@
 import { FormikErrors } from 'formik/dist/types';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { ElementTypes, FormItemModel } from '../../api';
 import { InputRenderer } from './InputRenderer';
-import { elementTypeItems, FormAnswer, FormItem, FormValues } from './types';
+import { elementTypeItems, FormValues } from './types';
 
 interface FormRendererProps {
-    formItems?: FormItem[];
+    formItems?: FormItemModel[];
     values?: FormValues;
     errors?: FormikErrors<Partial<FormValues>>;
     readonly?: boolean;
 
-    onEdit?: (item: FormItem) => void;
-    onDelete?: (item: FormItem) => void;
-    onChangeOrder?: (item: FormItem, index: number) => void;
-    onChangeItemValue?: (item: FormItem, value: string | string[]) => void;
+    onEdit?: (item: FormItemModel) => void;
+    onDelete?: (item: FormItemModel) => void;
+    onChangeOrder?: (item: FormItemModel, index: number) => void;
+    onChangeItemValue?: (item: FormItemModel, value: string | string[]) => void;
     // onErrorItemValue?: (item: FormItem, message: string) => void;
 }
 
@@ -29,35 +30,36 @@ const FormRenderer = ({
 FormRendererProps) => {
     const [hoverId, setHoverId] = useState<string>();
     const handleMouseEnter =
-        (item: FormItem) => (e: React.MouseEvent<HTMLDivElement>) => {
+        (item: FormItemModel) => (e: React.MouseEvent<HTMLDivElement>) => {
             setHoverId((_) => item.id);
         };
 
     const handleMouseLeave =
-        (item: FormItem) => (e: React.MouseEvent<HTMLDivElement>) => {
+        (item: FormItemModel) => (e: React.MouseEvent<HTMLDivElement>) => {
             setHoverId((_) => undefined);
         };
 
-    const handleEdit = (item: FormItem) => () => {
+    const handleEdit = (item: FormItemModel) => () => {
         if (onEdit) {
             onEdit(item);
         }
     };
 
-    const handleDelete = (item: FormItem) => () => {
+    const handleDelete = (item: FormItemModel) => () => {
         if (onDelete) {
             onDelete(item);
         }
     };
 
-    const handleChangeOrder = (item: FormItem, indexToChange: number) => () => {
-        if (onChangeOrder) {
-            onChangeOrder(item, indexToChange);
-        }
-    };
+    const handleChangeOrder =
+        (item: FormItemModel, indexToChange: number) => () => {
+            if (onChangeOrder) {
+                onChangeOrder(item, indexToChange);
+            }
+        };
 
     const handleChangeDefault =
-        (item: FormItem) =>
+        (item: FormItemModel) =>
         (
             e:
                 | React.ChangeEvent<HTMLSelectElement>
@@ -145,14 +147,14 @@ FormRendererProps) => {
                             >
                                 <option value="">{'Please select item'}</option>
 
-                                {item.options
-                                    ?.split(';')
-                                    .filter(Boolean)
-                                    .map((option) => (
-                                        <option key={option} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
+                                {item.options?.map((option) => (
+                                    <option
+                                        key={option.id}
+                                        value={option.value}
+                                    >
+                                        {option.text}
+                                    </option>
+                                ))}
                             </select>
                         ) : inputTypeItem.element === 'textarea' ? (
                             <textarea
