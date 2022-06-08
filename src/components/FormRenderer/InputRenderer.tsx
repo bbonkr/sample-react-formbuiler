@@ -182,10 +182,11 @@ export const InputRenderer = ({
                     <ul>
                         {files.map((file) => {
                             return (
-                                <li key={file.uri}>
+                                <li key={file.uri} className="flex flex-row">
                                     {file.name}
                                     <button
                                         type="button"
+                                        className="button danger flex sm"
                                         onClick={handleClickDeleteFile(file)}
                                     >
                                         Delete

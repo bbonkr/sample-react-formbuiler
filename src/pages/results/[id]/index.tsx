@@ -4,6 +4,7 @@ import Layout from '../../../components/common/Layout';
 import Content from '../../../components/Content';
 import ResultViewer from '../../../components/ResultViewer/ResultViewer';
 import { useResultsApi } from '../../../hooks/useResultsApi';
+import Head from 'next/head';
 
 const ResultItemPage = () => {
     // const { results } = useLocalStorage();
@@ -28,6 +29,9 @@ const ResultItemPage = () => {
 
     return (
         <Layout>
+            <Head>
+                <title>Result</title>
+            </Head>
             <Content title={'Result'} />
             <hr />
             {result && <ResultViewer record={result} />}

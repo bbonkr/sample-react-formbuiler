@@ -4,6 +4,7 @@ import Layout from '../../../components/common/Layout';
 import Content from '../../../components/Content';
 import FormViewer from '../../../components/FormViewer';
 import { useFormsApi } from '../../../hooks/useFormsApi';
+import Head from 'next/head';
 
 const FormItemPage = () => {
     const { formModel, getForm } = useFormsApi();
@@ -18,7 +19,11 @@ const FormItemPage = () => {
 
     return (
         <Layout>
-            <Content title={'Forms'} />
+            <Head>
+                <title>Form</title>
+            </Head>
+
+            <Content title={formModel?.title} />
             <hr />
             {formModel && <FormViewer record={formModel} />}
         </Layout>

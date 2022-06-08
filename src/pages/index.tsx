@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/common/Layout';
 import Content from '../components/Content';
 import FormBuilder from '../components/FormBuilder';
+import Head from 'next/head';
 
 const HomePage = () => {
     const router = useRouter();
@@ -13,6 +14,9 @@ const HomePage = () => {
 
     return (
         <Layout>
+            <Head>
+                <title>Form Builder</title>
+            </Head>
             <Content title={'Form Builder'} />
             <hr />
             <FormBuilder />

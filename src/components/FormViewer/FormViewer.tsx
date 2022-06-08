@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
 import { FormAnswer, FormResult } from '../FormRenderer/types';
-// import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { string } from 'yup';
 import { useResultsApi } from '../../hooks/useResultsApi';
 import { FormItemModel, FormModel } from '../../api';
@@ -14,7 +13,6 @@ interface FormViewerProps {
 type FormValues = Record<string, string | string[]>;
 
 const FormViewer = ({ record }: FormViewerProps) => {
-    // const { addOrUpdateFormResult } = useLocalStorage();
     const { addResult } = useResultsApi();
 
     const [result, setResult] = useState<FormResult>();
@@ -56,7 +54,6 @@ const FormViewer = ({ record }: FormViewerProps) => {
     ): boolean => {
         let isVaild = true;
         source.items?.forEach((item) => {
-            // console.info('validateFormValues', values[item.name]);
             const valid = validateItem(item, values[item.name]);
             isVaild = isVaild && valid;
         });
@@ -109,8 +106,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
 
     return (
         <div>
-            <h1>{record.id}</h1>
-            <div className="flex flex-row justify-center items-stretch gap-3">
+            <div className="flex flex-col justify-center items-stretch gap-3">
                 <div className="flex flex-col py-3 flex-1">
                     <form
                         onSubmit={handleSubmit}
@@ -135,17 +131,20 @@ const FormViewer = ({ record }: FormViewerProps) => {
                 </div>
 
                 <div className="flex flex-col flex-1 gap-3">
-                    <div>
-                        <h3>Form Values:</h3>
-                        <pre className="break-words whitespace-pre-wrap">
-                            {JSON.stringify(values, null, 4)}
-                        </pre>
-                    </div>
-                    <div>
-                        <h3>Submit data:</h3>
-                        <pre className="break-words whitespace-pre-wrap">
-                            {JSON.stringify(result, null, 4)}
-                        </pre>
+                    <h2 className="text-lg font-extrabold">Debug</h2>
+                    <div className="flex flex-row gap-3">
+                        <div className="flex-1">
+                            <h3>Form Values:</h3>
+                            <pre className="break-words whitespace-pre-wrap bg-slate-600 text-slate-200 px-2 py-3 border-2 rounded border-slate-600">
+                                {JSON.stringify(values, null, 4)}
+                            </pre>
+                        </div>
+                        <div className="flex-1">
+                            <h3>Submit data:</h3>
+                            <pre className="break-words whitespace-pre-wrap bg-slate-600 text-slate-200 px-2 py-3 border-2 rounded border-slate-600">
+                                {JSON.stringify(result ?? null, null, 4)}
+                            </pre>
+                        </div>
                     </div>
                 </div>
             </div>
