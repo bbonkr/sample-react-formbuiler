@@ -369,12 +369,12 @@ const FormBuilder = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col my-6">
+                <div className="flex flex-col my-6 gap-3">
                     <h3 className="text-lg font-extrabold">Debug</h3>
-                    <div className="flex flex-row justify-center items-stretch ">
+                    <div className="flex flex-row justify-center items-stretch gap-3">
                         <div className="flex-1">
                             Result:
-                            <pre className="break-words whitespace-pre-wrap">
+                            <pre className="break-words whitespace-pre-wrap bg-slate-600 text-slate-200 px-2 py-3 border-2 rounded border-slate-600">
                                 {JSON.stringify(
                                     currentFormSource?.items,
                                     null,
@@ -384,7 +384,7 @@ const FormBuilder = () => {
                         </div>
                         <div className="flex-1">
                             Current Form item:
-                            <pre className="break-words whitespace-pre-wrap">
+                            <pre className="break-words whitespace-pre-wrap bg-slate-600 text-slate-200 px-2 py-3 border-2 rounded border-slate-600">
                                 {JSON.stringify(values, null, 4)}
                             </pre>
                         </div>

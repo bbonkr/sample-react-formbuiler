@@ -14,7 +14,6 @@ interface FormRendererProps {
     onDelete?: (item: FormItemModel) => void;
     onChangeOrder?: (item: FormItemModel, index: number) => void;
     onChangeItemValue?: (item: FormItemModel, value: string | string[]) => void;
-    // onErrorItemValue?: (item: FormItem, message: string) => void;
 }
 
 const FormRenderer = ({
@@ -26,8 +25,7 @@ const FormRenderer = ({
     onDelete,
     onChangeOrder,
     onChangeItemValue,
-}: // onErrorItemValue,
-FormRendererProps) => {
+}: FormRendererProps) => {
     const [hoverId, setHoverId] = useState<string>();
     const handleMouseEnter =
         (item: FormItemModel) => (e: React.MouseEvent<HTMLDivElement>) => {
