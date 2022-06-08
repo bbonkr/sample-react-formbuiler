@@ -117,7 +117,14 @@ export const useFormsApi = () => {
                 addFormCommand: {
                     title: candidate.title ?? 'No title',
                     content: JSON.stringify(candidate, null, 4),
-                    items: item.items,
+                    items: item.items.map((formItem) => ({
+                        ...formItem,
+                        options:
+                            formItem.options?.map((op) => ({
+                                ...op,
+                                id: undefined,
+                            })) ?? [],
+                    })),
                 },
             })
             .then((response) => {
@@ -152,7 +159,14 @@ export const useFormsApi = () => {
                     id: candidate.id,
                     title: candidate.title ?? 'No title',
                     content: JSON.stringify(candidate, null, 4),
-                    items: item.items,
+                    items: item.items.map((formItem) => ({
+                        ...formItem,
+                        options:
+                            formItem.options?.map((op) => ({
+                                ...op,
+                                id: undefined,
+                            })) ?? [],
+                    })),
                 },
             })
             .then((response) => {

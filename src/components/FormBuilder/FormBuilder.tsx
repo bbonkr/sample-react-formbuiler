@@ -11,6 +11,8 @@ import {
     FormModel,
     ElementTypes,
 } from '../../api';
+import { OptionsBuilder } from './OptionsBuilder';
+import { FormItemForm } from './FormItemForm';
 
 const validationSchema: SchemaOf<FormItemModel> = object({
     id: string(),
@@ -134,6 +136,22 @@ const FormBuilder = () => {
         },
         onReset: (v, helper) => {},
     });
+
+    const handleOptionBuilderChange = (options: FormItemOptionModel[]) => {
+        setFieldValue('options', options ?? []);
+    };
+
+    const handleInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const name = e.target.name;
+        const value = e.target.value;
+
+        if (name === 'title') {
+            setCurrentFormSource((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+        }
+    };
 
     const handleChangeElementType = (
         e: React.ChangeEvent<HTMLSelectElement>,
@@ -297,6 +315,33 @@ const FormBuilder = () => {
                     </button>
                 </div>
             </div>
+
+            <hr className="my-3" />
+
+            {/* <div>
+                <div>
+                    <dl>
+                        <dt>Selected form:</dt>
+                        <dd className="flex flex-col">
+                            <span>{currentFormSource?.id ?? 'N/A'}</span>
+                            <span>{currentFormSource?.title ?? 'N/A'}</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div> */}
+            <div>
+                <div className="flex flex-col">
+                    <label>Title:</label>
+                    <input
+                        type="text"
+                        name="title"
+                        title="Title"
+                        value={currentFormSource?.title ?? ''}
+                        onChange={handleInputChanged}
+                    />
+                </div>
+            </div>
+
             <div className="flex flex-row w-full gap-3">
                 <div className="flex-1">
                     <h2 className="font-extrabold my-2">Preview</h2>
@@ -309,7 +354,18 @@ const FormBuilder = () => {
                 </div>
                 <div className="flex-1 ">
                     <h2 className="font-extrabold my-2">Form Item</h2>
-                    <form
+                    <FormItemForm
+                        values={values}
+                        isValid={isValid}
+                        errors={errors}
+                        getFieldProps={getFieldProps}
+                        onSubmit={handleSubmit}
+                        onReset={handleReset}
+                        onChangeElementType={handleChangeElementType}
+                        onChangeName={handleChangeName}
+                        onChangeOptionBuilder={handleOptionBuilderChange}
+                    />
+                    {/* <form
                         onSubmit={handleSubmit}
                         onReset={handleReset}
                         className="flex flex-col gap-3"
@@ -402,24 +458,42 @@ const FormBuilder = () => {
                                 Options:
                                 <span className="text-red-500">
                                     {' '}
-                                    {/* // TODO options */}
-                                    {/* {errors.options} */}
+                                     {errors.options} 
                                 </span>
                             </label>
+                            <OptionsBuilder
+                                options={values.options ?? []}
+                                disabled={
+                                    ![
+                                        ElementTypes.Select,
+                                        ElementTypes.Checkbox,
+                                        ElementTypes.Radio,
+                                    ].includes(values.elementType)
+                                }
+                                onChange={handleOptionBuilderChange}
+                            />
                             <input
                                 type="text"
                                 className="form-input"
                                 {...getFieldProps('options')}
-                                value={values.options?.join(',') ?? ''}
+                                value={
+                                    values.options
+                                        ?.map((option) => option?.value)
+                                        .join(';') ?? ''
+                                }
                                 disabled={
-                                    !['select', 'checkbox', 'radio'].includes(
-                                        values.elementType,
-                                    )
+                                    ![
+                                        ElementTypes.Select,
+                                        ElementTypes.Checkbox,
+                                        ElementTypes.Radio,
+                                    ].includes(values.elementType)
                                 }
                                 readOnly={
-                                    !['select', 'checkbox', 'radio'].includes(
-                                        values.elementType,
-                                    )
+                                    ![
+                                        ElementTypes.Select,
+                                        ElementTypes.Checkbox,
+                                        ElementTypes.Radio,
+                                    ].includes(values.elementType)
                                 }
                             />
                         </div>
@@ -450,7 +524,7 @@ const FormBuilder = () => {
                                 {values.id ? 'Update' : 'Add'} Field
                             </button>
                         </div>
-                    </form>
+                    </form> */}
                 </div>
             </div>
             <div className="flex flex-row justify-center items-stretch">
