@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
-import {
-    FormAnswer,
-    FormItem,
-    FormResult,
-    FormSource,
-} from '../FormRenderer/types';
+import { FormAnswer, FormResult } from '../FormRenderer/types';
 // import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { string } from 'yup';
 import { useResultsApi } from '../../hooks/useResultsApi';
+import { FormItemModel, FormModel } from '../../api';
 
 interface FormViewerProps {
-    record: FormSource;
+    record: FormModel;
 }
 
 type FormValues = Record<string, string | string[]>;
@@ -24,7 +20,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
     const [result, setResult] = useState<FormResult>();
 
     const validateItem = (
-        item: FormItem,
+        item: FormItemModel,
         value?: string | string[],
     ): boolean => {
         if (item.isRequired) {
@@ -34,7 +30,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
             }
 
             if (
-                item.elementType === 'checkbox' &&
+                item.elementType === 'Checkbox' &&
                 (!value || value.length === 0)
             ) {
                 setFieldError(item.name, 'Please choose least one item.');
@@ -42,7 +38,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
             }
         }
 
-        if (item.elementType === 'email') {
+        if (item.elementType === 'Email') {
             const validator = string().email();
             try {
                 validator.validateSync(value);
@@ -55,11 +51,11 @@ const FormViewer = ({ record }: FormViewerProps) => {
     };
 
     const validateFormValues = (
-        source: FormSource,
+        source: FormModel,
         values: FormValues,
     ): boolean => {
         let isVaild = true;
-        source.items.forEach((item) => {
+        source.items?.forEach((item) => {
             // console.info('validateFormValues', values[item.name]);
             const valid = validateItem(item, values[item.name]);
             isVaild = isVaild && valid;
@@ -79,7 +75,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
                     const result: FormResult = {
                         id: `${+new Date()}`,
                         formId: record.id,
-                        items: record.items.map((item) => {
+                        items: record?.items?.map((item) => {
                             const answer: FormAnswer = {
                                 ...item,
                                 answers: v[item.name],
@@ -97,7 +93,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
         });
 
     const handleChangeItemValue = (
-        item: FormItem,
+        item: FormItemModel,
         value: string | string[],
     ) => {
         setValues(

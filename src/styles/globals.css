@@ -3,16 +3,24 @@
 @tailwind utilities;
 
 .button {
-    @apply bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-center;
+    @apply flex flex-col justify-center items-center bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded;
 }
 
 .button.primary {
-    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center;
+    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold;
 }
 .button.danger {
-    @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-center;
+    @apply bg-red-500 hover:bg-red-700 text-white font-bold;
+}
+
+.button.sm {
+    @apply py-1 px-2;
 }
 
 .button:disabled {
-    @apply bg-gray-400 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded text-center;
+    @apply bg-gray-400 hover:bg-gray-400 text-white;
+}
+
+.max-h-80p {
+    max-height: 80vh;
 }

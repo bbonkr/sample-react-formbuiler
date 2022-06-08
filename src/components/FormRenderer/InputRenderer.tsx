@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { FilesApi, UploadFileMediaModel } from '../../api';
-import { ElementTypeItem, FormItem, FormValues } from './types';
+import { FilesApi, FormItemModel, UploadFileMediaModel } from '../../api';
+import { ElementTypeItem, FormValues } from './types';
 
 interface RendererProps {
-    item: FormItem;
+    item: FormItemModel;
     type: ElementTypeItem;
     id: string;
     values?: FormValues;
-    onChange?: (item: FormItem, value: string | string[]) => void;
+    onChange?: (item: FormItemModel, value: string | string[]) => void;
     // onError?: (item: FormItem, message: string) => void;
 }
 
@@ -129,38 +129,36 @@ export const InputRenderer = ({
     if (type.inputType === 'checkbox' || type.inputType === 'radio') {
         return (
             <div className="flex gap-3">
-                {item.options
-                    ?.split(';')
-                    .filter(Boolean)
-                    .map((option) => {
-                        return (
-                            <label key={option}>
-                                <input
-                                    type={type.inputType}
-                                    name={item.name}
-                                    value={option}
-                                    checked={
-                                        values &&
-                                        Array.isArray(values[item.name])
-                                            ? values &&
-                                              values[item.name].includes(option)
-                                            : values &&
-                                              values[item.name] === option
-                                            ? true
-                                            : false
-                                    }
-                                    required={
-                                        type.inputType === 'radio' &&
-                                        item.isRequired
-                                            ? true
-                                            : false
-                                    }
-                                    onChange={handleChangeValue}
-                                />{' '}
-                                {option}
-                            </label>
-                        );
-                    })}
+                {item.options?.map((option) => {
+                    return (
+                        <label key={option.id}>
+                            <input
+                                type={type.inputType}
+                                name={item.name}
+                                value={option.value}
+                                checked={
+                                    values && Array.isArray(values[item.name])
+                                        ? values &&
+                                          values[item.name].includes(
+                                              option.value,
+                                          )
+                                        : values &&
+                                          values[item.name] === option.value
+                                        ? true
+                                        : false
+                                }
+                                required={
+                                    type.inputType === 'radio' &&
+                                    item.isRequired
+                                        ? true
+                                        : false
+                                }
+                                onChange={handleChangeValue}
+                            />{' '}
+                            {option.text}
+                        </label>
+                    );
+                })}
             </div>
         );
     } else {
@@ -173,7 +171,7 @@ export const InputRenderer = ({
                     required={item.isRequired}
                     onChange={handleChangeValue}
                     value={
-                        values && item.elementType !== 'file'
+                        values && item.elementType !== 'File'
                             ? values[item.name] ?? ''
                             : ''
                     }

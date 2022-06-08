@@ -1,21 +1,23 @@
+import { ElementTypes, FormItemModel } from '../../api';
+
 export const elementTypes = [
-    'single-text-input',
-    'date',
-    'datetime',
-    'time',
-    'email',
-    'number-int',
-    'number-float',
-    'select',
-    'multi-text-input',
-    'checkbox',
-    'radio',
-    'file',
+    'SingleLineText',
+    'Date',
+    'Datetime',
+    'Time',
+    'Email',
+    'NumberInteger',
+    'NumberFloat',
+    'Select',
+    'MultiLineText',
+    'Checkbox',
+    'Radio',
+    'File',
 ] as const;
 export type ElementType = typeof elementTypes[number];
 
 export interface ElementTypeItem {
-    type: ElementType;
+    type: ElementTypes;
     element: string;
     name: string;
     inputType?: string;
@@ -23,73 +25,101 @@ export interface ElementTypeItem {
 
 export const elementTypeItems: ElementTypeItem[] = [
     {
-        type: 'single-text-input',
+        type: ElementTypes.SingleLineText, // 'SingleLineText',
         name: 'Signle text',
         element: 'input',
         inputType: 'text',
     },
     {
-        type: 'datetime',
+        type: ElementTypes.DateTime, //'Datetime',
         name: 'Date and time',
         element: 'input',
         inputType: 'datetime-local',
     },
-    { type: 'date', name: 'Date', element: 'input', inputType: 'date' },
-    { type: 'time', name: 'Time', element: 'input', inputType: 'time' },
-    { type: 'email', name: 'Email', element: 'input', inputType: 'email' },
     {
-        type: 'number-int',
+        type: ElementTypes.Date, //   'Date',
+        name: 'Date',
+        element: 'input',
+        inputType: 'date',
+    },
+    {
+        type: ElementTypes.Time, // 'Time',
+        name: 'Time',
+        element: 'input',
+        inputType: 'time',
+    },
+    {
+        type: ElementTypes.Email, // 'Email',
+        name: 'Email',
+        element: 'input',
+        inputType: 'email',
+    },
+    {
+        type: ElementTypes.NumberInteger, // 'NumberInteger',
         name: 'Integer number',
         element: 'input',
         inputType: 'number',
     },
     {
-        type: 'number-float',
+        type: ElementTypes.NumberFloat, // 'NumberFloat',
         name: 'Real number',
         element: 'input',
         inputType: 'number',
     },
-    { type: 'select', name: 'Select', element: 'select' },
-    { type: 'multi-text-input', name: 'Multi text', element: 'textarea' },
     {
-        type: 'checkbox',
+        type: ElementTypes.Select, //'Select',
+        name: 'Select',
+        element: 'select',
+    },
+    {
+        type: ElementTypes.MultiLineText, // 'MultiLineText',
+        name: 'Multi text',
+        element: 'textarea',
+    },
+    {
+        type: ElementTypes.Checkbox, // 'Checkbox',
         name: 'Check boxes',
         element: 'input',
         inputType: 'checkbox',
     },
     {
-        type: 'radio',
+        type: ElementTypes.Radio, // 'Radio',
         name: 'Radio buttons',
         element: 'input',
         inputType: 'radio',
     },
-    { type: 'file', name: 'File', element: 'input', inputType: 'file' },
+    {
+        type: ElementTypes.File, //'File',
+        name: 'File',
+        element: 'input',
+        inputType: 'file',
+    },
 ];
 
 export const inputTypes = ['text', 'date', 'datetime', 'time'] as const;
 
 export type InputTypes = typeof inputTypes[number];
 
-export interface FormItem {
-    id: string;
-    label: string;
-    description?: string;
-    elementType: ElementType;
-    name: string;
-    options?: string;
-    isRequired?: boolean;
-    placeholder?: string;
-}
+// export interface FormItem {
+//     id: string;
+//     label: string;
+//     description?: string;
+//     elementType: ElementType;
+//     name: string;
+//     options?: string;
+//     isRequired?: boolean;
+//     placeholder?: string;
+// }
 
-export interface FormSource {
-    id: string;
-    title?: string;
-    items: FormItem[];
-}
+// export interface FormSource {
+//     id: string;
+//     title?: string;
+//     items: FormItem[];
+// }
 
 export type FormAnswer = {
     answers?: string | string[];
-} & FormItem;
+} & FormItemModel;
 
 export type FormValues = Record<string, string | string[]>;
 

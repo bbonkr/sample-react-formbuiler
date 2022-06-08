@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import React from 'react';
-import { FormResult } from '../FormRenderer';
+import { ResultModelPagedModel } from '../../api';
 
 interface ResultListProps {
-    records?: FormResult[];
+    records?: ResultModelPagedModel | null;
 }
 
 const ResultList = ({ records }: ResultListProps) => {
@@ -18,7 +18,7 @@ const ResultList = ({ records }: ResultListProps) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {!records || records?.length === 0 ? (
+                    {!records || records?.items.length === 0 ? (
                         <tr>
                             <td className="text-center" colSpan={3}>
                                 No item
@@ -26,7 +26,7 @@ const ResultList = ({ records }: ResultListProps) => {
                         </tr>
                     ) : (
                         <React.Fragment>
-                            {records.map((item) => {
+                            {records.items.map((item) => {
                                 return (
                                     <tr key={item.id} className="">
                                         <td className="text-center py-1">
@@ -36,7 +36,7 @@ const ResultList = ({ records }: ResultListProps) => {
                                             <Link
                                                 href={`/forms/${item.formId}`}
                                             >
-                                                <a>{item.formId}</a>
+                                                <a>{item.form?.title}</a>
                                             </Link>
                                         </td>
                                         <td className="text-center py-1">

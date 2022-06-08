@@ -39,6 +39,12 @@ export interface AddFormCommand {
      * @memberof AddFormCommand
      */
     content?: string | null;
+    /**
+     * 
+     * @type {Array<FormItemModel>}
+     * @memberof AddFormCommand
+     */
+    items?: Array<FormItemModel> | null;
 }
 /**
  * 
@@ -72,6 +78,26 @@ export interface DeleteFileCommand {
      */
     uri?: string | null;
 }
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+export enum ElementTypes {
+    SingleLineText = 'SingleLineText',
+    MultiLineText = 'MultiLineText',
+    Email = 'Email',
+    DateTime = 'DateTime',
+    Date = 'Date',
+    Time = 'Time',
+    NumberInteger = 'NumberInteger',
+    NumberFloat = 'NumberFloat',
+    Select = 'Select',
+    Checkbox = 'Checkbox',
+    Radio = 'Radio',
+    File = 'File'
+}
+
 /**
  * 
  * @export
@@ -149,6 +175,110 @@ export interface ErrorModelApiResponseModel {
 /**
  * 
  * @export
+ * @interface FormItemModel
+ */
+export interface FormItemModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemModel
+     */
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemModel
+     */
+    formId?: string;
+    /**
+     * 
+     * @type {ElementTypes}
+     * @memberof FormItemModel
+     */
+    elementType?: ElementTypes;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemModel
+     */
+    name?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemModel
+     */
+    label?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemModel
+     */
+    description?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemModel
+     */
+    placeholder?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof FormItemModel
+     */
+    isRequired?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof FormItemModel
+     */
+    ordinal?: number;
+    /**
+     * 
+     * @type {Array<FormItemOptionModel>}
+     * @memberof FormItemModel
+     */
+    options?: Array<FormItemOptionModel> | null;
+}
+/**
+ * 
+ * @export
+ * @interface FormItemOptionModel
+ */
+export interface FormItemOptionModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionModel
+     */
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionModel
+     */
+    formItemId?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionModel
+     */
+    value?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionModel
+     */
+    text?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof FormItemOptionModel
+     */
+    ordinal?: number;
+}
+/**
+ * 
+ * @export
  * @interface FormModel
  */
 export interface FormModel {
@@ -170,6 +300,18 @@ export interface FormModel {
      * @memberof FormModel
      */
     content?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof FormModel
+     */
+    resultsCount?: number;
+    /**
+     * 
+     * @type {Array<FormItemModel>}
+     * @memberof FormModel
+     */
+    items?: Array<FormItemModel> | null;
 }
 /**
  * 
@@ -313,6 +455,12 @@ export interface UpdateFormCommand {
      * @memberof UpdateFormCommand
      */
     content?: string | null;
+    /**
+     * 
+     * @type {Array<FormItemModel>}
+     * @memberof UpdateFormCommand
+     */
+    items?: Array<FormItemModel> | null;
 }
 /**
  * 
@@ -810,6 +958,35 @@ export const FormsApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FormsMigrate: async (options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/Forms/migrate`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {UpdateFormCommand} [updateFormCommand] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -895,6 +1072,15 @@ export const FormsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiv10FormsMigrate(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10FormsMigrate(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {UpdateFormCommand} [updateFormCommand] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -950,6 +1136,14 @@ export const FormsApiFactory = function (configuration?: Configuration, basePath
          */
         apiv10FormsGetForms(page?: number, limit?: number, keyword?: string, options?: any): AxiosPromise<FormModelPagedModel> {
             return localVarFp.apiv10FormsGetForms(page, limit, keyword, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10FormsMigrate(options?: any): AxiosPromise<void> {
+            return localVarFp.apiv10FormsMigrate(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1096,6 +1290,16 @@ export class FormsApi extends BaseAPI {
      */
     public apiv10FormsGetForms(requestParameters: FormsApiApiv10FormsGetFormsRequest = {}, options?: any) {
         return FormsApiFp(this.configuration).apiv10FormsGetForms(requestParameters.page, requestParameters.limit, requestParameters.keyword, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FormsApi
+     */
+    public apiv10FormsMigrate(options?: any) {
+        return FormsApiFp(this.configuration).apiv10FormsMigrate(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

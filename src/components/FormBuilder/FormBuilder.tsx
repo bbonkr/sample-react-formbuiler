@@ -1,43 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import {
-    elementTypeItems,
-    elementTypes,
-    FormSource,
-} from '../FormRenderer/types';
-import type { FormItem, ElementType } from '../FormRenderer/types';
+import { elementTypeItems } from '../FormRenderer/types';
+import type { ElementType } from '../FormRenderer/types';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
-import { boolean, object, SchemaOf, string, mixed } from 'yup';
-// import { useLocalStorage } from '../../hooks/useLocalStorage';
-import ImportData from '../ImportData';
+import { boolean, object, SchemaOf, string, mixed, number, array } from 'yup';
 import { useFormsApi } from '../../hooks/useFormsApi';
+import {
+    FormItemModel,
+    FormItemOptionModel,
+    FormModel,
+    ElementTypes,
+} from '../../api';
+import { OptionsBuilder } from './OptionsBuilder';
+import { FormItemForm } from './FormItemForm';
+import Modal from '../Modal';
 
-const validationSchema: SchemaOf<FormItem> = object({
+const validationSchema: SchemaOf<FormItemModel> = object({
     id: string(),
-    elementType: mixed<ElementType>()
+    formId: string(),
+    title: string(),
+    elementType: mixed<ElementTypes>()
         .required()
-        .oneOf([...elementTypes]),
+        .oneOf([...Object.values(ElementTypes)]),
     label: string().required(),
     name: string().required(),
     description: string(),
-    options: string().when('elementType', {
-        is: (el) => {
-            return el === 'select' || el === 'checkbox' || el === 'radio';
-        },
-        then: string().required(),
-    }),
+    // options: string().when('elementType', {
+    //     is: (el) => {
+    //         return el === 'select' || el === 'checkbox' || el === 'radio';
+    //     },
+    //     then: string().required(),
+    // }),
+    options: array<FormItemOptionModel>().of(
+        object({
+            id: string(),
+            formItemId: string(),
+            value: string(),
+            text: string(),
+            ordinal: number(),
+        }),
+    ),
     isRequired: boolean(),
     inputType: string(),
     placeholder: string(),
+    ordinal: number(),
 });
 
 const FormBuilder = () => {
     const [currentFormSourceId, setCurrentFormSourceId] = useState<string>();
-    const [currentFormSource, setCurrentFormSource] = useState<FormSource>();
+    const [currentFormSource, setCurrentFormSource] = useState<FormModel>();
 
     // const { addOrUpdateFormData, removeFormData } = useLocalStorage();
-    const { forms, addedOrUpdatedFormId, addForm, updateForm, deleteForm } =
-        useFormsApi();
+    const {
+        formPagedModel,
+        // forms,
+        addedOrUpdatedFormId,
+        addForm,
+        updateForm,
+        deleteForm,
+    } = useFormsApi();
 
     const {
         values,
@@ -53,17 +74,17 @@ const FormBuilder = () => {
         setFieldValue,
         setFieldError,
         resetForm,
-    } = useFormik<Partial<FormItem>>({
-        initialValues: {},
+    } = useFormik<Partial<FormItemModel>>({
+        initialValues: undefined,
         enableReinitialize: true,
         validationSchema: validationSchema,
         onSubmit: (v, helper) => {
             if (isValid) {
-                const formItem = v as FormItem;
+                const formItem = v as FormItemModel;
 
-                if (!formItem.id) {
-                    formItem.id = `${+new Date()}`;
-                }
+                // if (!formItem.id) {
+                //     formItem.id = `${+new Date()}`;
+                // }
 
                 let hasSameName = false;
                 currentFormSource?.items?.forEach((item) => {
@@ -91,7 +112,7 @@ const FormBuilder = () => {
                         const index = current.items.findIndex(
                             (x) => x.id === formItem.id,
                         );
-                        const temp = [...current.items];
+                        const temp = current.items.slice();
                         if (index >= 0) {
                             temp.splice(index, 1, formItem);
                         } else {
@@ -100,7 +121,13 @@ const FormBuilder = () => {
 
                         return {
                             ...current,
-                            items: [...temp],
+                            items: [
+                                ...temp.map((t, i) => ({
+                                    ...t,
+                                    formId: current.id,
+                                    ordinal: i + 1,
+                                })),
+                            ],
                         };
                     });
 
@@ -110,6 +137,22 @@ const FormBuilder = () => {
         },
         onReset: (v, helper) => {},
     });
+
+    const handleOptionBuilderChange = (options: FormItemOptionModel[]) => {
+        setFieldValue('options', options ?? []);
+    };
+
+    const handleInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const name = e.target.name;
+        const value = e.target.value;
+
+        if (name === 'title') {
+            setCurrentFormSource((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+        }
+    };
 
     const handleChangeElementType = (
         e: React.ChangeEvent<HTMLSelectElement>,
@@ -121,7 +164,7 @@ const FormBuilder = () => {
             setFieldError('options', undefined);
         }
 
-        if (selectedElementType === 'radio') {
+        if (selectedElementType === 'Radio') {
             setFieldValue('isRequired', true);
         } else {
             setFieldValue('isRequired', false);
@@ -130,11 +173,11 @@ const FormBuilder = () => {
         handleChange(e);
     };
 
-    const handleEdit = (item: FormItem) => {
+    const handleEdit = (item: FormItemModel) => {
         setValues(item);
     };
 
-    const handleDelete = (item: FormItem) => {
+    const handleDelete = (item: FormItemModel) => {
         setCurrentFormSource((prevState) => {
             const index = prevState.items.findIndex((x) => x.id === item.id);
             if (index >= 0) {
@@ -146,10 +189,10 @@ const FormBuilder = () => {
 
             return prevState;
         });
-        resetForm({});
+        resetForm(undefined);
     };
 
-    const handleChangeOrder = (item: FormItem, indexToChange: number) => {
+    const handleChangeOrder = (item: FormItemModel, indexToChange: number) => {
         setCurrentFormSource((prevState) => {
             if (indexToChange >= 0 && indexToChange < prevState.items.length) {
                 const currentIndex = prevState.items.findIndex(
@@ -220,9 +263,20 @@ const FormBuilder = () => {
         handleChange(e);
     };
 
+    const handleClickAddField = () => {
+        setValues({});
+    };
+
+    const handleCloseModal = () => {
+        setValues(undefined);
+    };
+
     useEffect(() => {
         if (currentFormSourceId) {
-            const formSource = forms.find((x) => x.id === currentFormSourceId);
+            const formSource = formPagedModel?.items?.find(
+                (x) => x.id === currentFormSourceId,
+            );
+
             // console.info('formSource:', formSource);
             setCurrentFormSource((_) => formSource);
         } else {
@@ -235,211 +289,126 @@ const FormBuilder = () => {
     }, [addedOrUpdatedFormId]);
 
     return (
-        <div className="flex flex-col">
-            <div className="flex flex-row justify-center items-stretch gap-3">
-                <div className="flex-1">
-                    <select
-                        className="w-full"
-                        onChange={handleChangeFormSourceSelect}
-                        value={currentFormSourceId}
-                    >
-                        <option value="">Select form</option>
-                        {forms?.map((item) => {
-                            return (
-                                <option key={item.id} value={item.id}>
-                                    {item.id}
-                                </option>
-                            );
-                        })}
-                    </select>
-                </div>
-
-                <div className="flex gap-3">
-                    {/* <ImportData /> */}
-                    <button className="button" onClick={handleNewFormSource}>
-                        New
-                    </button>
-                    <button
-                        className="button danger"
-                        onClick={handleDeleteFormSource}
-                    >
-                        Delete
-                    </button>
-                    <button className="button" onClick={handleSaveFormSource}>
-                        Save
-                    </button>
-                </div>
-            </div>
-            <div className="flex flex-row w-full gap-3">
-                <div className="flex-1">
-                    <h2 className="font-extrabold my-2">Preview</h2>
-                    <FormRenderer
-                        formItems={currentFormSource?.items}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onChangeOrder={handleChangeOrder}
-                    />
-                </div>
-                <div className="flex-1 ">
-                    <h2 className="font-extrabold my-2">Form Item</h2>
-                    <form
-                        onSubmit={handleSubmit}
-                        onReset={handleReset}
-                        className="flex flex-col gap-3"
-                    >
-                        <input
-                            type="hidden"
-                            {...getFieldProps('id')}
-                            value={values.id ?? ''}
-                        />
-                        <div className="flex flex-col">
-                            <label>
-                                Type:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.elementType}
-                                </span>
-                            </label>
-                            <select
-                                {...getFieldProps('elementType')}
-                                onChange={handleChangeElementType}
-                                value={values.elementType ?? ''}
-                            >
-                                <option value="">
-                                    Please select element type
-                                </option>
-                                {elementTypeItems.map((item) => (
-                                    <option key={item.type} value={item.type}>
-                                        {item.name}
+        <React.Fragment>
+            <div className="flex flex-col">
+                <div className="flex flex-row justify-center items-stretch gap-3">
+                    <div className="flex-1">
+                        <select
+                            className="w-full"
+                            onChange={handleChangeFormSourceSelect}
+                            value={currentFormSourceId}
+                        >
+                            <option value="">Select form</option>
+                            {formPagedModel?.items?.map((item) => {
+                                return (
+                                    <option key={item.id} value={item.id}>
+                                        {item.id} {item.title}
                                     </option>
-                                ))}
-                            </select>
+                                );
+                            })}
+                        </select>
+                    </div>
+
+                    <div className="flex gap-3">
+                        {/* <ImportData /> */}
+                        <button
+                            className="button"
+                            onClick={handleNewFormSource}
+                        >
+                            New
+                        </button>
+                        <button
+                            className="button danger"
+                            onClick={handleDeleteFormSource}
+                        >
+                            Delete
+                        </button>
+                        <button
+                            className="button"
+                            onClick={handleSaveFormSource}
+                        >
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <hr className="my-3" />
+
+                {currentFormSource && (
+                    <div className="flex flex-col">
+                        <div className="flex flex-col my-6">
+                            <label>Title:</label>
+                            <input
+                                type="text"
+                                name="title"
+                                title="Title"
+                                value={currentFormSource?.title ?? ''}
+                                onChange={handleInputChanged}
+                            />
                         </div>
 
-                        <div className="flex flex-col">
-                            <label>
-                                Label:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.label}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('label')}
-                                value={values.label ?? ''}
-                            />
-                        </div>
+                        <button
+                            type="button"
+                            className="button primary"
+                            onClick={handleClickAddField}
+                        >
+                            Add field
+                        </button>
+                    </div>
+                )}
 
-                        <div className="flex flex-col">
-                            <label>
-                                Placeholder:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.placeholder}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('placeholder')}
-                                value={values.placeholder ?? ''}
-                            />
-                        </div>
+                <div className="flex flex-row w-full gap-3">
+                    <div className="flex-1">
+                        <h2 className="text-lg font-extrabold my-2">Preview</h2>
+                        <FormRenderer
+                            formItems={currentFormSource?.items}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onChangeOrder={handleChangeOrder}
+                        />
+                    </div>
+                </div>
 
-                        <div className="flex flex-col">
-                            <label>Description:</label>
-                            <textarea
-                                {...getFieldProps('description')}
-                                value={values.description ?? ''}
-                            />
+                <div className="flex flex-col my-6">
+                    <h3 className="text-lg font-extrabold">Debug</h3>
+                    <div className="flex flex-row justify-center items-stretch ">
+                        <div className="flex-1">
+                            Result:
+                            <pre className="break-words whitespace-pre-wrap">
+                                {JSON.stringify(
+                                    currentFormSource?.items,
+                                    null,
+                                    4,
+                                )}
+                            </pre>
                         </div>
-                        <div className="flex flex-col">
-                            <label>
-                                Name:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.name}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                {...getFieldProps('name')}
-                                onChange={handleChangeName}
-                                value={values.name ?? ''}
-                            />
+                        <div className="flex-1">
+                            Current Form item:
+                            <pre className="break-words whitespace-pre-wrap">
+                                {JSON.stringify(values, null, 4)}
+                            </pre>
                         </div>
-                        <div className="flex flex-col">
-                            <label>
-                                Options:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.options}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('options')}
-                                value={values.options ?? ''}
-                                disabled={
-                                    !['select', 'checkbox', 'radio'].includes(
-                                        values.elementType,
-                                    )
-                                }
-                                readOnly={
-                                    !['select', 'checkbox', 'radio'].includes(
-                                        values.elementType,
-                                    )
-                                }
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <label className="">Required:</label>
-                            <label className="checkbox">
-                                <input
-                                    className="form-control"
-                                    type="checkbox"
-                                    {...getFieldProps('isRequired')}
-                                    checked={values.isRequired ?? false}
-                                    disabled={values.elementType === 'radio'}
-                                />
-                                {' This field is required'}
-                            </label>
-                        </div>
-                        <div className="flex flex-row justify-center items-stretch my-6">
-                            {values.id && (
-                                <button className="button flex-1" type="reset">
-                                    Reset
-                                </button>
-                            )}
-                            <button
-                                className="button primary flex-1"
-                                type="submit"
-                                disabled={!isValid}
-                            >
-                                {values.id ? 'Update' : 'Add'} Field
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
-            <div className="flex flex-row justify-center items-stretch">
-                <div className="flex-1">
-                    Result:
-                    <pre className="break-words whitespace-pre-wrap">
-                        {JSON.stringify(currentFormSource?.items, null, 4)}
-                    </pre>
-                </div>
-                <div className="flex-1">
-                    Current Form item:
-                    <pre className="break-words whitespace-pre-wrap">
-                        {JSON.stringify(values, null, 4)}
-                    </pre>
-                </div>
-            </div>
-        </div>
+            <Modal
+                isOpen={Boolean(values)}
+                title={<h2 className="font-extrabold my-2">Form Item</h2>}
+                onClose={handleCloseModal}
+            >
+                <FormItemForm
+                    values={values}
+                    isValid={isValid}
+                    errors={errors}
+                    getFieldProps={getFieldProps}
+                    onSubmit={handleSubmit}
+                    onReset={handleReset}
+                    onChangeElementType={handleChangeElementType}
+                    onChangeName={handleChangeName}
+                    onChangeOptionBuilder={handleOptionBuilderChange}
+                />
+            </Modal>
+        </React.Fragment>
     );
 };
 
