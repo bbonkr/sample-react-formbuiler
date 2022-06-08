@@ -1,62 +1,48 @@
 import { combineReducers } from 'redux';
 import { createReducer } from 'typesafe-actions';
-import { FormResult } from '../../components/FormRenderer';
 import { rootActions, RootAction } from '../actions';
-import { produce } from 'immer';
+import { ResultModel, ResultModelPagedModel } from '../../api';
 
-const results = createReducer<FormResult[], RootAction>([])
-    .handleAction(
-        [rootActions.result.intialize],
-        produce((draft, action) => {
-            const insertCandidate: FormResult[] = [];
+const results = createReducer<ResultModelPagedModel | null, RootAction>(null)
+    .handleAction([rootActions.result.intialize], (_, action) => action.payload)
+    .handleAction([rootActions.result.addOrUpdate], (state, action) => {
+        const tempResults = state.items.slice();
 
-            action.payload.forEach((item) => {
-                const foundIndex = draft.findIndex((x) => x.id === item.id);
-                if (foundIndex < 0) {
-                    insertCandidate.push(item);
-                }
-            });
+        const foundIndex = tempResults.findIndex(
+            (x) => x.id === action.payload.id,
+        );
+        if (foundIndex >= 0) {
+            tempResults.splice(foundIndex, 1, action.payload);
 
-            draft.push(...insertCandidate);
-            // return [...insertCandidate, ...draft];
-        }),
-    )
-    .handleAction(
-        [rootActions.result.addOrUpdate],
-        produce((draft, action) => {
-            const data = action.payload;
+            return {
+                ...state,
+                items: [...tempResults],
+            };
+        }
 
-            const index = draft.findIndex((x) => x.id === data.id);
+        return state;
+    })
+    .handleAction([rootActions.result.reomve], (state, action) => {
+        const tempResults = state.items.slice();
 
-            if (index >= 0) {
-                draft.splice(index, 1, data);
-                // return [data, ...draft.filter((x) => x.id !== data.id)];
-            } else {
-                // draft.unshift(data);
-                draft.push(data);
-                // return [data, ...draft];
-            }
-        }),
-    )
-    .handleAction(
-        [rootActions.result.reomve],
-        produce((draft, action) => {
-            const data = action.payload;
+        const foundIndex = tempResults.findIndex(
+            (x) => x.id === action.payload.id,
+        );
+        if (foundIndex >= 0) {
+            tempResults.splice(foundIndex, 1);
 
-            const index = draft.findIndex((x) => x.id === data.id);
+            return {
+                ...state,
+                items: [...tempResults],
+            };
+        }
 
-            if (index >= 0) {
-                draft.splice(index, 1);
-                // return [...draft.filter((x) => x.id !== data.id)];
-            }
+        return state;
+    });
 
-            // return draft;
-        }),
-    );
-
-const result = createReducer<FormResult | null, RootAction>(null).handleAction(
+const result = createReducer<ResultModel | null, RootAction>(null).handleAction(
     [rootActions.result.setCurrentResult],
-    (state, action) => action.payload,
+    (_, action) => action.payload,
 );
 
 export const formResultState = combineReducers({ results, result });

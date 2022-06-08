@@ -12,7 +12,7 @@ const FormsList = ({ records }: FormsListProps) => {
             <table className="table w-full">
                 <thead>
                     <tr className="border-y-2">
-                        <th className="py-2">Id</th>
+                        <th className="py-2">Title</th>
                         <th className="py-2">Link</th>
                     </tr>
                 </thead>
@@ -28,10 +28,8 @@ const FormsList = ({ records }: FormsListProps) => {
                             {records.items.map((item) => {
                                 return (
                                     <tr key={item.id} className="">
-                                        <td className="text-center py-1">
-                                            {item.id}
-                                        </td>
-                                        <td className="text-center py-1">
+                                        <td className="py-1">{item.title}</td>
+                                        <td className="py-1">
                                             <Link href={`/forms/${item.id}`}>
                                                 <a>Form link {item.id}</a>
                                             </Link>

@@ -36,7 +36,7 @@ export const FormItemForm = ({
             <input
                 type="hidden"
                 {...getFieldProps('id')}
-                value={values.id ?? ''}
+                value={values?.id ?? ''}
             />
             <div className="flex flex-col">
                 <label>
@@ -46,7 +46,7 @@ export const FormItemForm = ({
                 <select
                     {...getFieldProps('elementType')}
                     onChange={onChangeElementType}
-                    value={values.elementType ?? ''}
+                    value={values?.elementType ?? ''}
                 >
                     <option value="">Please select element type</option>
                     {elementTypeItems.map((item) => (
@@ -66,7 +66,7 @@ export const FormItemForm = ({
                     type="text"
                     className="form-input"
                     {...getFieldProps('label')}
-                    value={values.label ?? ''}
+                    value={values?.label ?? ''}
                 />
             </div>
 
@@ -79,7 +79,7 @@ export const FormItemForm = ({
                     type="text"
                     className="form-input"
                     {...getFieldProps('placeholder')}
-                    value={values.placeholder ?? ''}
+                    value={values?.placeholder ?? ''}
                 />
             </div>
 
@@ -87,7 +87,7 @@ export const FormItemForm = ({
                 <label>Description:</label>
                 <textarea
                     {...getFieldProps('description')}
-                    value={values.description ?? ''}
+                    value={values?.description ?? ''}
                 />
             </div>
             <div className="flex flex-col">
@@ -99,7 +99,7 @@ export const FormItemForm = ({
                     type="text"
                     {...getFieldProps('name')}
                     onChange={onChangeName}
-                    value={values.name ?? ''}
+                    value={values?.name ?? ''}
                 />
             </div>
             <div className="flex flex-col">
@@ -112,13 +112,13 @@ export const FormItemForm = ({
                     </span>
                 </label>
                 <OptionsBuilder
-                    options={values.options ?? []}
+                    options={values?.options ?? []}
                     disabled={
                         ![
                             ElementTypes.Select,
                             ElementTypes.Checkbox,
                             ElementTypes.Radio,
-                        ].includes(values.elementType)
+                        ].includes(values?.elementType)
                     }
                     onChange={onChangeOptionBuilder}
                 />
@@ -154,14 +154,14 @@ export const FormItemForm = ({
                         className="form-control"
                         type="checkbox"
                         {...getFieldProps('isRequired')}
-                        checked={values.isRequired ?? false}
-                        disabled={values.elementType === 'Radio'}
+                        checked={values?.isRequired ?? false}
+                        disabled={values?.elementType === 'Radio'}
                     />
                     {' This field is required'}
                 </label>
             </div>
             <div className="flex flex-row justify-center items-stretch my-6">
-                {values.id && (
+                {values?.id && (
                     <button className="button flex-1" type="reset">
                         Reset
                     </button>
@@ -171,7 +171,7 @@ export const FormItemForm = ({
                     type="submit"
                     disabled={!isValid}
                 >
-                    {values.id ? 'Update' : 'Add'} Field
+                    {values?.id ? 'Update' : 'Add'} Field
                 </button>
             </div>
         </form>

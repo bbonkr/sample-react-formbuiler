@@ -13,6 +13,7 @@ import {
 } from '../../api';
 import { OptionsBuilder } from './OptionsBuilder';
 import { FormItemForm } from './FormItemForm';
+import Modal from '../Modal';
 
 const validationSchema: SchemaOf<FormItemModel> = object({
     id: string(),
@@ -74,7 +75,7 @@ const FormBuilder = () => {
         setFieldError,
         resetForm,
     } = useFormik<Partial<FormItemModel>>({
-        initialValues: {},
+        initialValues: undefined,
         enableReinitialize: true,
         validationSchema: validationSchema,
         onSubmit: (v, helper) => {
@@ -188,7 +189,7 @@ const FormBuilder = () => {
 
             return prevState;
         });
-        resetForm({});
+        resetForm(undefined);
     };
 
     const handleChangeOrder = (item: FormItemModel, indexToChange: number) => {
@@ -262,6 +263,14 @@ const FormBuilder = () => {
         handleChange(e);
     };
 
+    const handleClickAddField = () => {
+        setValues({});
+    };
+
+    const handleCloseModal = () => {
+        setValues(undefined);
+    };
+
     useEffect(() => {
         if (currentFormSourceId) {
             const formSource = formPagedModel?.items?.find(
@@ -280,268 +289,126 @@ const FormBuilder = () => {
     }, [addedOrUpdatedFormId]);
 
     return (
-        <div className="flex flex-col">
-            <div className="flex flex-row justify-center items-stretch gap-3">
-                <div className="flex-1">
-                    <select
-                        className="w-full"
-                        onChange={handleChangeFormSourceSelect}
-                        value={currentFormSourceId}
-                    >
-                        <option value="">Select form</option>
-                        {formPagedModel?.items?.map((item) => {
-                            return (
-                                <option key={item.id} value={item.id}>
-                                    {item.id} {item.title}
-                                </option>
-                            );
-                        })}
-                    </select>
-                </div>
-
-                <div className="flex gap-3">
-                    {/* <ImportData /> */}
-                    <button className="button" onClick={handleNewFormSource}>
-                        New
-                    </button>
-                    <button
-                        className="button danger"
-                        onClick={handleDeleteFormSource}
-                    >
-                        Delete
-                    </button>
-                    <button className="button" onClick={handleSaveFormSource}>
-                        Save
-                    </button>
-                </div>
-            </div>
-
-            <hr className="my-3" />
-
-            {/* <div>
-                <div>
-                    <dl>
-                        <dt>Selected form:</dt>
-                        <dd className="flex flex-col">
-                            <span>{currentFormSource?.id ?? 'N/A'}</span>
-                            <span>{currentFormSource?.title ?? 'N/A'}</span>
-                        </dd>
-                    </dl>
-                </div>
-            </div> */}
-            <div>
-                <div className="flex flex-col">
-                    <label>Title:</label>
-                    <input
-                        type="text"
-                        name="title"
-                        title="Title"
-                        value={currentFormSource?.title ?? ''}
-                        onChange={handleInputChanged}
-                    />
-                </div>
-            </div>
-
-            <div className="flex flex-row w-full gap-3">
-                <div className="flex-1">
-                    <h2 className="font-extrabold my-2">Preview</h2>
-                    <FormRenderer
-                        formItems={currentFormSource?.items}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onChangeOrder={handleChangeOrder}
-                    />
-                </div>
-                <div className="flex-1 ">
-                    <h2 className="font-extrabold my-2">Form Item</h2>
-                    <FormItemForm
-                        values={values}
-                        isValid={isValid}
-                        errors={errors}
-                        getFieldProps={getFieldProps}
-                        onSubmit={handleSubmit}
-                        onReset={handleReset}
-                        onChangeElementType={handleChangeElementType}
-                        onChangeName={handleChangeName}
-                        onChangeOptionBuilder={handleOptionBuilderChange}
-                    />
-                    {/* <form
-                        onSubmit={handleSubmit}
-                        onReset={handleReset}
-                        className="flex flex-col gap-3"
-                    >
-                        <input
-                            type="hidden"
-                            {...getFieldProps('id')}
-                            value={values.id ?? ''}
-                        />
-                        <div className="flex flex-col">
-                            <label>
-                                Type:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.elementType}
-                                </span>
-                            </label>
-                            <select
-                                {...getFieldProps('elementType')}
-                                onChange={handleChangeElementType}
-                                value={values.elementType ?? ''}
-                            >
-                                <option value="">
-                                    Please select element type
-                                </option>
-                                {elementTypeItems.map((item) => (
-                                    <option key={item.type} value={item.type}>
-                                        {item.name}
+        <React.Fragment>
+            <div className="flex flex-col">
+                <div className="flex flex-row justify-center items-stretch gap-3">
+                    <div className="flex-1">
+                        <select
+                            className="w-full"
+                            onChange={handleChangeFormSourceSelect}
+                            value={currentFormSourceId}
+                        >
+                            <option value="">Select form</option>
+                            {formPagedModel?.items?.map((item) => {
+                                return (
+                                    <option key={item.id} value={item.id}>
+                                        {item.id} {item.title}
                                     </option>
-                                ))}
-                            </select>
+                                );
+                            })}
+                        </select>
+                    </div>
+
+                    <div className="flex gap-3">
+                        {/* <ImportData /> */}
+                        <button
+                            className="button"
+                            onClick={handleNewFormSource}
+                        >
+                            New
+                        </button>
+                        <button
+                            className="button danger"
+                            onClick={handleDeleteFormSource}
+                        >
+                            Delete
+                        </button>
+                        <button
+                            className="button"
+                            onClick={handleSaveFormSource}
+                        >
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <hr className="my-3" />
+
+                {currentFormSource && (
+                    <div className="flex flex-col">
+                        <div className="flex flex-col my-6">
+                            <label>Title:</label>
+                            <input
+                                type="text"
+                                name="title"
+                                title="Title"
+                                value={currentFormSource?.title ?? ''}
+                                onChange={handleInputChanged}
+                            />
                         </div>
 
-                        <div className="flex flex-col">
-                            <label>
-                                Label:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.label}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('label')}
-                                value={values.label ?? ''}
-                            />
-                        </div>
+                        <button
+                            type="button"
+                            className="button primary"
+                            onClick={handleClickAddField}
+                        >
+                            Add field
+                        </button>
+                    </div>
+                )}
 
-                        <div className="flex flex-col">
-                            <label>
-                                Placeholder:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.placeholder}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('placeholder')}
-                                value={values.placeholder ?? ''}
-                            />
-                        </div>
+                <div className="flex flex-row w-full gap-3">
+                    <div className="flex-1">
+                        <h2 className="text-lg font-extrabold my-2">Preview</h2>
+                        <FormRenderer
+                            formItems={currentFormSource?.items}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onChangeOrder={handleChangeOrder}
+                        />
+                    </div>
+                </div>
 
-                        <div className="flex flex-col">
-                            <label>Description:</label>
-                            <textarea
-                                {...getFieldProps('description')}
-                                value={values.description ?? ''}
-                            />
+                <div className="flex flex-col my-6">
+                    <h3 className="text-lg font-extrabold">Debug</h3>
+                    <div className="flex flex-row justify-center items-stretch ">
+                        <div className="flex-1">
+                            Result:
+                            <pre className="break-words whitespace-pre-wrap">
+                                {JSON.stringify(
+                                    currentFormSource?.items,
+                                    null,
+                                    4,
+                                )}
+                            </pre>
                         </div>
-                        <div className="flex flex-col">
-                            <label>
-                                Name:
-                                <span className="text-red-500">
-                                    {' '}
-                                    {errors.name}
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                {...getFieldProps('name')}
-                                onChange={handleChangeName}
-                                value={values.name ?? ''}
-                            />
+                        <div className="flex-1">
+                            Current Form item:
+                            <pre className="break-words whitespace-pre-wrap">
+                                {JSON.stringify(values, null, 4)}
+                            </pre>
                         </div>
-                        <div className="flex flex-col">
-                            <label>
-                                Options:
-                                <span className="text-red-500">
-                                    {' '}
-                                     {errors.options} 
-                                </span>
-                            </label>
-                            <OptionsBuilder
-                                options={values.options ?? []}
-                                disabled={
-                                    ![
-                                        ElementTypes.Select,
-                                        ElementTypes.Checkbox,
-                                        ElementTypes.Radio,
-                                    ].includes(values.elementType)
-                                }
-                                onChange={handleOptionBuilderChange}
-                            />
-                            <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('options')}
-                                value={
-                                    values.options
-                                        ?.map((option) => option?.value)
-                                        .join(';') ?? ''
-                                }
-                                disabled={
-                                    ![
-                                        ElementTypes.Select,
-                                        ElementTypes.Checkbox,
-                                        ElementTypes.Radio,
-                                    ].includes(values.elementType)
-                                }
-                                readOnly={
-                                    ![
-                                        ElementTypes.Select,
-                                        ElementTypes.Checkbox,
-                                        ElementTypes.Radio,
-                                    ].includes(values.elementType)
-                                }
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <label className="">Required:</label>
-                            <label className="checkbox">
-                                <input
-                                    className="form-control"
-                                    type="checkbox"
-                                    {...getFieldProps('isRequired')}
-                                    checked={values.isRequired ?? false}
-                                    disabled={values.elementType === 'Radio'}
-                                />
-                                {' This field is required'}
-                            </label>
-                        </div>
-                        <div className="flex flex-row justify-center items-stretch my-6">
-                            {values.id && (
-                                <button className="button flex-1" type="reset">
-                                    Reset
-                                </button>
-                            )}
-                            <button
-                                className="button primary flex-1"
-                                type="submit"
-                                disabled={!isValid}
-                            >
-                                {values.id ? 'Update' : 'Add'} Field
-                            </button>
-                        </div>
-                    </form> */}
+                    </div>
                 </div>
             </div>
-            <div className="flex flex-row justify-center items-stretch">
-                <div className="flex-1">
-                    Result:
-                    <pre className="break-words whitespace-pre-wrap">
-                        {JSON.stringify(currentFormSource?.items, null, 4)}
-                    </pre>
-                </div>
-                <div className="flex-1">
-                    Current Form item:
-                    <pre className="break-words whitespace-pre-wrap">
-                        {JSON.stringify(values, null, 4)}
-                    </pre>
-                </div>
-            </div>
-        </div>
+            <Modal
+                isOpen={Boolean(values)}
+                title={<h2 className="font-extrabold my-2">Form Item</h2>}
+                onClose={handleCloseModal}
+            >
+                <FormItemForm
+                    values={values}
+                    isValid={isValid}
+                    errors={errors}
+                    getFieldProps={getFieldProps}
+                    onSubmit={handleSubmit}
+                    onReset={handleReset}
+                    onChangeElementType={handleChangeElementType}
+                    onChangeName={handleChangeName}
+                    onChangeOptionBuilder={handleOptionBuilderChange}
+                />
+            </Modal>
+        </React.Fragment>
     );
 };
 

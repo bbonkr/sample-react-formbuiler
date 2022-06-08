@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import {
+    ResultModel,
     ResultsApi,
     ResultsApiApiv10ResultsAddResultRequest,
     ResultsApiApiv10ResultsGetResultByIdRequest,
@@ -8,7 +9,6 @@ import {
 import { FormResultState, RootState } from '../../store/reducers';
 import useSwr from 'swr';
 import { useEffect, useState } from 'react';
-import { FormResult } from '../../components/FormRenderer';
 import { rootActions } from '../../store/actions';
 
 export const useResultsApi = () => {
@@ -84,7 +84,7 @@ export const useResultsApi = () => {
         setGetResultByIdOptions((prevState) => ({ id: id }));
     };
 
-    const addResult = (item: FormResult) => {
+    const addResult = (item: ResultModel) => {
         const serialized = JSON.stringify(item, null, 4);
         client
             .apiv10ResultsAddResult({
@@ -94,44 +94,21 @@ export const useResultsApi = () => {
                 },
             })
             .then((response) => {
-                const added = JSON.parse(response.data.content) as FormResult;
-                if (added) {
-                    added.id = response.data.id;
-                    added.formId = response.data.formId;
-
-                    dispatch(rootActions.result.addOrUpdate(added));
-                }
+                dispatch(rootActions.result.addOrUpdate(response.data));
             });
     };
 
     useEffect(() => {
         if (!isLoadingGetResults && getResultsResponseData) {
-            const formResults = getResultsResponseData?.items.map((x) => {
-                const formResult: FormResult = JSON.parse(
-                    x.content,
-                ) as FormResult;
-
-                formResult.id = x.id;
-
-                return formResult;
-            });
-
-            dispatch(rootActions.result.intialize(formResults ?? []));
+            dispatch(rootActions.result.intialize(getResultsResponseData));
         }
     }, [getResultsResponseData, isLoadingGetResults]);
 
     useEffect(() => {
         if (!isLoadingGetResultById && getResultByIdResponseData) {
-            const formResult: FormResult = JSON.parse(
-                getResultByIdResponseData.content,
-            ) as FormResult;
-
-            if (formResult) {
-                formResult.id = getResultByIdResponseData.id;
-                formResult.formId = getResultByIdResponseData.form.id;
-
-                dispatch(rootActions.result.setCurrentResult(formResult));
-            }
+            dispatch(
+                rootActions.result.setCurrentResult(getResultByIdResponseData),
+            );
         }
     }, [getResultByIdResponseData, isLoadingGetResultById]);
 
