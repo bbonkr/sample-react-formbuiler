@@ -37,6 +37,7 @@ export interface AddFormCommand {
      * 
      * @type {string}
      * @memberof AddFormCommand
+     * @deprecated
      */
     content?: string | null;
     /**
@@ -298,6 +299,7 @@ export interface FormModel {
      * 
      * @type {string}
      * @memberof FormModel
+     * @deprecated
      */
     content?: string | null;
     /**
@@ -362,6 +364,105 @@ export interface GetFileByUriQuery {
      * @memberof GetFileByUriQuery
      */
     uri?: string | null;
+}
+/**
+ * 
+ * @export
+ * @interface GetTranslatedTextQuery
+ */
+export interface GetTranslatedTextQuery {
+    /**
+     * 
+     * @type {string}
+     * @memberof GetTranslatedTextQuery
+     */
+    originLanguageCode?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof GetTranslatedTextQuery
+     */
+    translateToLanguageCode?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof GetTranslatedTextQuery
+     */
+    text?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof GetTranslatedTextQuery
+     */
+    isHtml?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface LanguageModel
+ */
+export interface LanguageModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof LanguageModel
+     */
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LanguageModel
+     */
+    code?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof LanguageModel
+     */
+    name?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof LanguageModel
+     */
+    ordinal?: number;
+}
+/**
+ * 
+ * @export
+ * @interface LanguageModelPagedModel
+ */
+export interface LanguageModelPagedModel {
+    /**
+     * 
+     * @type {number}
+     * @memberof LanguageModelPagedModel
+     */
+    currentPage?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof LanguageModelPagedModel
+     */
+    limit?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof LanguageModelPagedModel
+     */
+    totalItems?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof LanguageModelPagedModel
+     */
+    totalPages?: number;
+    /**
+     * 
+     * @type {Array<LanguageModel>}
+     * @memberof LanguageModelPagedModel
+     */
+    items?: Array<LanguageModel> | null;
 }
 /**
  * 
@@ -434,6 +535,31 @@ export interface ResultModelPagedModel {
 /**
  * 
  * @export
+ * @interface TranslatedModel
+ */
+export interface TranslatedModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof TranslatedModel
+     */
+    originLanguageCode?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof TranslatedModel
+     */
+    translatedLanguageCode?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof TranslatedModel
+     */
+    text?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface UpdateFormCommand
  */
 export interface UpdateFormCommand {
@@ -453,6 +579,7 @@ export interface UpdateFormCommand {
      * 
      * @type {string}
      * @memberof UpdateFormCommand
+     * @deprecated
      */
     content?: string | null;
     /**
@@ -958,35 +1085,6 @@ export const FormsApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiv10FormsMigrate: async (options: any = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/Forms/migrate`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {UpdateFormCommand} [updateFormCommand] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1072,15 +1170,6 @@ export const FormsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async apiv10FormsMigrate(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10FormsMigrate(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {UpdateFormCommand} [updateFormCommand] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1136,14 +1225,6 @@ export const FormsApiFactory = function (configuration?: Configuration, basePath
          */
         apiv10FormsGetForms(page?: number, limit?: number, keyword?: string, options?: any): AxiosPromise<FormModelPagedModel> {
             return localVarFp.apiv10FormsGetForms(page, limit, keyword, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiv10FormsMigrate(options?: any): AxiosPromise<void> {
-            return localVarFp.apiv10FormsMigrate(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1294,16 +1375,6 @@ export class FormsApi extends BaseAPI {
 
     /**
      * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof FormsApi
-     */
-    public apiv10FormsMigrate(options?: any) {
-        return FormsApiFp(this.configuration).apiv10FormsMigrate(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @param {FormsApiApiv10FormsUpdateFormRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1311,6 +1382,150 @@ export class FormsApi extends BaseAPI {
      */
     public apiv10FormsUpdateForm(requestParameters: FormsApiApiv10FormsUpdateFormRequest = {}, options?: any) {
         return FormsApiFp(this.configuration).apiv10FormsUpdateForm(requestParameters.updateFormCommand, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * LanguagesApi - axios parameter creator
+ * @export
+ */
+export const LanguagesApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {number} [page] 
+         * @param {number} [limit] 
+         * @param {string} [keyword] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10LanguagesGetLanguages: async (page?: number, limit?: number, keyword?: string, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/Languages`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (page !== undefined) {
+                localVarQueryParameter['Page'] = page;
+            }
+
+            if (limit !== undefined) {
+                localVarQueryParameter['Limit'] = limit;
+            }
+
+            if (keyword !== undefined) {
+                localVarQueryParameter['Keyword'] = keyword;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * LanguagesApi - functional programming interface
+ * @export
+ */
+export const LanguagesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = LanguagesApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {number} [page] 
+         * @param {number} [limit] 
+         * @param {string} [keyword] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiv10LanguagesGetLanguages(page?: number, limit?: number, keyword?: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LanguageModelPagedModel>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10LanguagesGetLanguages(page, limit, keyword, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * LanguagesApi - factory interface
+ * @export
+ */
+export const LanguagesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = LanguagesApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {number} [page] 
+         * @param {number} [limit] 
+         * @param {string} [keyword] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10LanguagesGetLanguages(page?: number, limit?: number, keyword?: string, options?: any): AxiosPromise<LanguageModelPagedModel> {
+            return localVarFp.apiv10LanguagesGetLanguages(page, limit, keyword, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for apiv10LanguagesGetLanguages operation in LanguagesApi.
+ * @export
+ * @interface LanguagesApiApiv10LanguagesGetLanguagesRequest
+ */
+export interface LanguagesApiApiv10LanguagesGetLanguagesRequest {
+    /**
+     * 
+     * @type {number}
+     * @memberof LanguagesApiApiv10LanguagesGetLanguages
+     */
+    readonly page?: number
+
+    /**
+     * 
+     * @type {number}
+     * @memberof LanguagesApiApiv10LanguagesGetLanguages
+     */
+    readonly limit?: number
+
+    /**
+     * 
+     * @type {string}
+     * @memberof LanguagesApiApiv10LanguagesGetLanguages
+     */
+    readonly keyword?: string
+}
+
+/**
+ * LanguagesApi - object-oriented interface
+ * @export
+ * @class LanguagesApi
+ * @extends {BaseAPI}
+ */
+export class LanguagesApi extends BaseAPI {
+    /**
+     * 
+     * @param {LanguagesApiApiv10LanguagesGetLanguagesRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LanguagesApi
+     */
+    public apiv10LanguagesGetLanguages(requestParameters: LanguagesApiApiv10LanguagesGetLanguagesRequest = {}, options?: any) {
+        return LanguagesApiFp(this.configuration).apiv10LanguagesGetLanguages(requestParameters.page, requestParameters.limit, requestParameters.keyword, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1595,6 +1810,121 @@ export class ResultsApi extends BaseAPI {
      */
     public apiv10ResultsGetResults(requestParameters: ResultsApiApiv10ResultsGetResultsRequest = {}, options?: any) {
         return ResultsApiFp(this.configuration).apiv10ResultsGetResults(requestParameters.page, requestParameters.limit, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * TranslationsApi - axios parameter creator
+ * @export
+ */
+export const TranslationsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {GetTranslatedTextQuery} [getTranslatedTextQuery] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10TranslationsTranslate: async (getTranslatedTextQuery?: GetTranslatedTextQuery, options: any = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/Translations`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter, options.query);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getTranslatedTextQuery, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * TranslationsApi - functional programming interface
+ * @export
+ */
+export const TranslationsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = TranslationsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {GetTranslatedTextQuery} [getTranslatedTextQuery] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiv10TranslationsTranslate(getTranslatedTextQuery?: GetTranslatedTextQuery, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TranslatedModel>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10TranslationsTranslate(getTranslatedTextQuery, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * TranslationsApi - factory interface
+ * @export
+ */
+export const TranslationsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = TranslationsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {GetTranslatedTextQuery} [getTranslatedTextQuery] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiv10TranslationsTranslate(getTranslatedTextQuery?: GetTranslatedTextQuery, options?: any): AxiosPromise<TranslatedModel> {
+            return localVarFp.apiv10TranslationsTranslate(getTranslatedTextQuery, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for apiv10TranslationsTranslate operation in TranslationsApi.
+ * @export
+ * @interface TranslationsApiApiv10TranslationsTranslateRequest
+ */
+export interface TranslationsApiApiv10TranslationsTranslateRequest {
+    /**
+     * 
+     * @type {GetTranslatedTextQuery}
+     * @memberof TranslationsApiApiv10TranslationsTranslate
+     */
+    readonly getTranslatedTextQuery?: GetTranslatedTextQuery
+}
+
+/**
+ * TranslationsApi - object-oriented interface
+ * @export
+ * @class TranslationsApi
+ * @extends {BaseAPI}
+ */
+export class TranslationsApi extends BaseAPI {
+    /**
+     * 
+     * @param {TranslationsApiApiv10TranslationsTranslateRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TranslationsApi
+     */
+    public apiv10TranslationsTranslate(requestParameters: TranslationsApiApiv10TranslationsTranslateRequest = {}, options?: any) {
+        return TranslationsApiFp(this.configuration).apiv10TranslationsTranslate(requestParameters.getTranslatedTextQuery, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
