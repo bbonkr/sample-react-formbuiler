@@ -2,49 +2,44 @@ import React, { useEffect, useState } from 'react';
 import type { ElementType } from '../FormRenderer/types';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
-import { boolean, object, SchemaOf, string, mixed, number, array } from 'yup';
 import { useFormsApi } from '../../hooks/useFormsApi';
-import {
-    FormItemModel,
-    FormItemOptionModel,
-    FormModel,
-    ElementTypes,
-} from '../../api';
+import { FormItemModel, FormItemOptionModel, FormModel } from '../../api';
 import { FormItemForm } from './FormItemForm';
 import Modal from '../Modal';
 import LanguageSelector from '../LanguageSelector';
+import { formItemModelValidationSchema } from '../../lib/ValidationSchema';
 
-const validationSchema: SchemaOf<FormItemModel> = object({
-    id: string(),
-    formId: string(),
-    title: string(),
-    elementType: mixed<ElementTypes>()
-        .required()
-        .oneOf([...Object.values(ElementTypes)]),
-    label: string().required(),
-    name: string().required(),
-    description: string(),
-    options: array<FormItemOptionModel>().of(
-        object({
-            id: string(),
-            formItemId: string(),
-            value: string(),
-            text: string(),
-            ordinal: number(),
-        }),
-    ),
-    isRequired: boolean(),
-    inputType: string(),
-    placeholder: string(),
-    ordinal: number(),
-});
+// const validationSchema: SchemaOf<FormItemModel> = object({
+//     id: string(),
+//     formId: string(),
+//     title: string(),
+//     elementType: mixed<ElementTypes>()
+//         .required()
+//         .oneOf([...Object.values(ElementTypes)]),
+//     label: string().required(),
+//     name: string().required(),
+//     description: string(),
+//     options: array<FormItemOptionModel>().of(
+//         object({
+//             id: string(),
+//             formItemId: string(),
+//             value: string(),
+//             text: string(),
+//             ordinal: number(),
+//         }),
+//     ),
+//     isRequired: boolean(),
+//     inputType: string(),
+//     placeholder: string(),
+//     ordinal: number(),
+// });
 
-const formItemValidationSchema: SchemaOf<FormModel> = object({
-    id: string(),
-    title: string().required(),
-    items: array<FormItemModel>().of(validationSchema),
-    resultsCount: number(),
-});
+// const formItemValidationSchema: SchemaOf<FormModel> = object({
+//     id: string(),
+//     title: string().required(),
+//     items: array<FormItemModel>().of(validationSchema),
+//     resultsCount: number(),
+// });
 
 const FormBuilder = () => {
     const [currentFormSourceId, setCurrentFormSourceId] = useState<string>();
@@ -77,7 +72,7 @@ const FormBuilder = () => {
     } = useFormik<Partial<FormItemModel>>({
         initialValues: undefined,
         enableReinitialize: true,
-        validationSchema: validationSchema,
+        validationSchema: formItemModelValidationSchema,
         onSubmit: (v, helper) => {
             if (isValid) {
                 const formItem = v as FormItemModel;
