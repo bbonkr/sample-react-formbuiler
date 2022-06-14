@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { elementTypeItems } from '../FormRenderer/types';
 import type { ElementType } from '../FormRenderer/types';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
@@ -11,9 +10,9 @@ import {
     FormModel,
     ElementTypes,
 } from '../../api';
-import { OptionsBuilder } from './OptionsBuilder';
 import { FormItemForm } from './FormItemForm';
 import Modal from '../Modal';
+import LanguageSelector from '../LanguageSelector';
 
 const validationSchema: SchemaOf<FormItemModel> = object({
     id: string(),
@@ -25,12 +24,6 @@ const validationSchema: SchemaOf<FormItemModel> = object({
     label: string().required(),
     name: string().required(),
     description: string(),
-    // options: string().when('elementType', {
-    //     is: (el) => {
-    //         return el === 'select' || el === 'checkbox' || el === 'radio';
-    //     },
-    //     then: string().required(),
-    // }),
     options: array<FormItemOptionModel>().of(
         object({
             id: string(),
@@ -44,6 +37,13 @@ const validationSchema: SchemaOf<FormItemModel> = object({
     inputType: string(),
     placeholder: string(),
     ordinal: number(),
+});
+
+const formItemValidationSchema: SchemaOf<FormModel> = object({
+    id: string(),
+    title: string().required(),
+    items: array<FormItemModel>().of(validationSchema),
+    resultsCount: number(),
 });
 
 const FormBuilder = () => {
@@ -81,10 +81,6 @@ const FormBuilder = () => {
         onSubmit: (v, helper) => {
             if (isValid) {
                 const formItem = v as FormItemModel;
-
-                // if (!formItem.id) {
-                //     formItem.id = `${+new Date()}`;
-                // }
 
                 let hasSameName = false;
                 currentFormSource?.items?.forEach((item) => {
@@ -228,6 +224,7 @@ const FormBuilder = () => {
         setCurrentFormSource((_) => ({
             // id: `${+new Date()}`,
             id: '',
+            title: '',
             items: [],
         }));
     };
@@ -336,10 +333,28 @@ const FormBuilder = () => {
 
                 {currentFormSource && (
                     <div className="flex flex-col">
-                        <div className="flex flex-col my-6">
-                            <label>Title:</label>
+                        <div className="flex flex-col my-6 ">
+                            <label htmlFor="formbuilder-form-language">
+                                Language:
+                            </label>
+                            <LanguageSelector
+                                id="formbuilder-form-language"
+                                disabled={!Boolean(currentFormSource?.id)}
+                            />
+                            {!Boolean(currentFormSource?.id) && (
+                                <p className="text-sm font-light text-slate-500 dark:text-slate-400">
+                                    You can change language after save form data
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col my-6 ">
+                            <label htmlFor="formbuilder-form-title">
+                                Title:
+                            </label>
                             <input
                                 type="text"
+                                id="formbuilder-form-title"
                                 name="title"
                                 title="Title"
                                 value={currentFormSource?.title ?? ''}
