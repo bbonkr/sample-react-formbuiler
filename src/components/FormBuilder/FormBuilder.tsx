@@ -7,6 +7,7 @@ import Modal from '../Modal';
 import LanguageSelector from '../LanguageSelector';
 
 const FormBuilder = () => {
+    const defaultLanguageCode = 'en';
     const [currentFormId, setCurrentFormId] = useState<string>();
     const [currentForm, setCurrentForm] = useState<FormModel>();
     const [currentFormItem, setCurrentFormItem] =
@@ -62,10 +63,48 @@ const FormBuilder = () => {
         const value = e.target.value;
 
         if (name === 'title') {
-            setCurrentForm((prevState) => ({
-                ...prevState,
-                [name]: value,
-            }));
+            let language: LanguageModel = undefined;
+            if (currentLanguage?.code !== defaultLanguageCode) {
+                language = currentLanguage;
+            }
+
+            setCurrentForm((prevState) => {
+                if (language) {
+                    const tempLocales = prevState.locales?.slice() ?? [];
+                    const index = tempLocales.findIndex(
+                        (x) => x.languageId === language.id,
+                    );
+
+                    if (index >= 0) {
+                        tempLocales.splice(index, 1);
+                    }
+
+                    tempLocales.push({
+                        languageId: language.id,
+                        languageCode: language.code,
+                        title: value,
+                    });
+
+                    return {
+                        ...prevState,
+                        locales: [
+                            ...tempLocales.filter(
+                                (x) => x.languageCode !== defaultLanguageCode,
+                            ),
+                        ],
+                    };
+                }
+
+                return {
+                    ...prevState,
+                    locales: [
+                        ...prevState.locales?.filter(
+                            (x) => x.languageCode !== defaultLanguageCode,
+                        ),
+                    ],
+                    [name]: value,
+                };
+            });
         }
     };
 
@@ -131,10 +170,13 @@ const FormBuilder = () => {
         const formSourceId = e.target.value;
 
         setCurrentFormId((_) => formSourceId);
+
+        setCurrentLanguage((_) => undefined);
     };
 
     const handleClickNewForm = () => {
         setCurrentFormId((_) => '');
+        setCurrentLanguage((_) => undefined);
     };
 
     const handleClickSaveForm = () => {
@@ -149,11 +191,14 @@ const FormBuilder = () => {
         deleteForm(currentForm);
 
         setCurrentFormId((_) => '');
+        setCurrentLanguage((_) => undefined);
     };
 
     const handleClickAddField = () => {
         // setValues({});
-        setCurrentFormItem((_) => ({}));
+        setCurrentFormItem((_) => ({
+            id: `${+new Date()}`,
+        }));
     };
 
     const handleCloseModal = () => {
@@ -184,7 +229,23 @@ const FormBuilder = () => {
     }, [addedOrUpdatedFormId]);
 
     useEffect(() => {
-        console.info('Selected language: ', currentLanguage);
+        if (currentForm) {
+            console.info(
+                'currentForm, currentLanguage',
+                currentForm,
+                currentLanguage,
+            );
+
+            // const localedForm = currentForm.locales?.find(
+            //     (x) =>
+            //         x.languageId === currentLanguage?.id ?? defaultLanguageCode,
+            // );
+
+            // setCurrentForm((prevState) => ({
+            //     ...prevState,
+            //     title: localedForm?.title,
+            // }));
+        }
     }, [currentLanguage]);
 
     return (
@@ -258,7 +319,17 @@ const FormBuilder = () => {
                                 id="formbuilder-form-title"
                                 name="title"
                                 title="Title"
-                                value={currentForm?.title ?? ''}
+                                value={
+                                    (currentLanguage &&
+                                    currentLanguage?.code !==
+                                        defaultLanguageCode
+                                        ? currentForm?.locales?.find(
+                                              (x) =>
+                                                  x.languageId ===
+                                                  currentLanguage?.id,
+                                          )?.title
+                                        : currentForm?.title) ?? ''
+                                }
                                 onChange={handleInputChanged}
                             />
                         </div>
@@ -291,7 +362,7 @@ const FormBuilder = () => {
                         <div className="flex-1">
                             Result:
                             <pre className="break-words whitespace-pre-wrap bg-slate-600 text-slate-200 px-2 py-3 border-2 rounded border-slate-600">
-                                {JSON.stringify(currentForm?.items, null, 4)}
+                                {JSON.stringify(currentForm, null, 4)}
                             </pre>
                         </div>
                         <div className="flex-1">
@@ -311,6 +382,7 @@ const FormBuilder = () => {
                 <FormItemForm
                     initialFormItem={currentFormItem}
                     form={currentForm}
+                    langauge={currentLanguage}
                     onEdited={handleEditedFormItem}
                     onCancel={handleClickCancelFormItem}
                 />

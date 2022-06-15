@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { FormItemOptionModel } from '../../api';
+import { FormItemOptionModel, LanguageModel } from '../../api';
 
 interface OptionsBuilderProps {
     options?: FormItemOptionModel[];
+    language?: LanguageModel;
     disabled?: boolean;
     onChange?: (options: FormItemOptionModel[]) => void;
 }
 
 export const OptionsBuilder = ({
     options,
+    language,
     disabled,
     onChange,
 }: OptionsBuilderProps) => {

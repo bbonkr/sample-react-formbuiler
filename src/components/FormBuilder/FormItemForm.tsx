@@ -4,6 +4,7 @@ import {
     FormItemModel,
     FormItemOptionModel,
     FormModel,
+    LanguageModel,
 } from '../../api';
 import { OptionsBuilder } from './OptionsBuilder';
 import { ElementType, elementTypeItems } from '../FormRenderer/types';
@@ -13,6 +14,7 @@ import { formItemModelValidationSchema } from '../../lib/ValidationSchema';
 interface FormItemFormProps {
     initialFormItem?: Partial<FormItemModel>;
     form?: FormModel;
+    langauge?: LanguageModel;
     onEdited?: (formItem: FormItemModel) => void;
     onCancel?: () => void;
 }
@@ -20,6 +22,7 @@ interface FormItemFormProps {
 export const FormItemForm = ({
     initialFormItem,
     form,
+    langauge,
     onEdited,
     onCancel,
 }: FormItemFormProps) => {
@@ -201,6 +204,7 @@ export const FormItemForm = ({
                 </label>
                 <OptionsBuilder
                     options={values?.options ?? []}
+                    language={langauge}
                     disabled={
                         ![
                             ElementTypes.Select,

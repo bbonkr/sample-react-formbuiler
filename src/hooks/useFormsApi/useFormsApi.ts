@@ -115,10 +115,12 @@ export const useFormsApi = () => {
         client
             .apiv10FormsAddForm({
                 addFormCommand: {
+                    ...item,
                     title: candidate.title ?? 'No title',
-                    content: JSON.stringify(candidate, null, 4),
+                    // content: JSON.stringify(candidate, null, 4),
                     items: item.items.map((formItem) => ({
                         ...formItem,
+                        id: undefined,
                         options:
                             formItem.options?.map((op) => ({
                                 ...op,
@@ -149,18 +151,20 @@ export const useFormsApi = () => {
 
     const updateForm = (item: FormModel) => {
         dispatch(rootActions.source.setAddedOrUpdatedFormSourceId(null));
-        const candidate = { ...item };
+        const candidate: FormModel = { ...item };
 
         delete candidate.items;
 
         client
             .apiv10FormsUpdateForm({
                 updateFormCommand: {
+                    ...item,
                     id: candidate.id,
                     title: candidate.title ?? 'No title',
-                    content: JSON.stringify(candidate, null, 4),
+                    // content: JSON.stringify(candidate, null, 4),
                     items: item.items.map((formItem) => ({
                         ...formItem,
+                        id: undefined,
                         options:
                             formItem.options?.map((op) => ({
                                 ...op,
