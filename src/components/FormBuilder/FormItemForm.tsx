@@ -1,36 +1,124 @@
 import React from 'react';
-import { ElementTypes, FormItemModel, FormItemOptionModel } from '../../api';
-import type { FieldInputProps, FormikErrors } from 'formik/dist/types';
+import {
+    ElementTypes,
+    FormItemModel,
+    FormItemOptionModel,
+    FormModel,
+} from '../../api';
 import { OptionsBuilder } from './OptionsBuilder';
-import { elementTypeItems } from '../FormRenderer/types';
+import { ElementType, elementTypeItems } from '../FormRenderer/types';
+import { useFormik } from 'formik';
+import { formItemModelValidationSchema } from '../../lib/ValidationSchema';
 
 interface FormItemFormProps {
-    values?: Partial<FormItemModel>;
-    errors: FormikErrors<Partial<FormItemModel>>;
-    isValid?: boolean;
-    getFieldProps: (nameOrOptions: any) => FieldInputProps<any>;
-    onSubmit?: (e?: React.FormEvent<HTMLFormElement>) => void;
-    onReset?: (e: React.FormEvent<HTMLFormElement>) => void;
-    onChangeName?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onChangeOptionBuilder?: (options: FormItemOptionModel[]) => void;
-    onChangeElementType?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    initialFormItem?: Partial<FormItemModel>;
+    form?: FormModel;
+    onEdited?: (formItem: FormItemModel) => void;
+    onCancel?: () => void;
 }
 
 export const FormItemForm = ({
-    values,
-    errors,
-    isValid,
-    getFieldProps,
-    onSubmit,
-    onReset,
-    onChangeName,
-    onChangeOptionBuilder,
-    onChangeElementType,
+    initialFormItem,
+    form,
+    onEdited,
+    onCancel,
 }: FormItemFormProps) => {
+    const {
+        values,
+        errors,
+        isValid,
+        isValidating,
+        isSubmitting,
+        handleSubmit,
+        handleReset,
+        handleChange,
+        getFieldProps,
+        setValues,
+        setFieldValue,
+        setFieldError,
+        resetForm,
+    } = useFormik<Partial<FormItemModel>>({
+        initialValues: initialFormItem,
+        enableReinitialize: true,
+        validationSchema: formItemModelValidationSchema,
+        onSubmit: (v, helper) => {
+            if (isValid) {
+                const formItem = v as FormItemModel;
+
+                let hasSameName = false;
+                form?.items?.forEach((item) => {
+                    if (
+                        item.id !== formItem.id &&
+                        item.name === formItem.name
+                    ) {
+                        hasSameName = true;
+                    }
+                });
+
+                if (hasSameName) {
+                    setFieldError(
+                        'name',
+                        'Name field has to need unique value',
+                    );
+                } else {
+                    if (onEdited) {
+                        onEdited(formItem);
+                    }
+
+                    helper.resetForm({});
+                }
+            }
+        },
+        onReset: (v, helper) => {
+            if (onCancel) {
+                onCancel();
+            }
+        },
+    });
+
+    const handleChangeElementType = (
+        e: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const selectedElementType = e.target.value as ElementType;
+
+        if (!['select', 'checkbox', 'radio'].includes(selectedElementType)) {
+            setFieldValue('options', undefined);
+            setFieldError('options', undefined);
+        }
+
+        if (selectedElementType === 'Radio') {
+            setFieldValue('isRequired', true);
+        } else {
+            setFieldValue('isRequired', false);
+        }
+
+        handleChange(e);
+    };
+
+    const handleChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const nameValue = e.target.value;
+        let hasSameName = false;
+        form?.items?.forEach((item) => {
+            if (item.id !== values.id && item.name === nameValue) {
+                hasSameName = true;
+            }
+        });
+
+        if (hasSameName) {
+            setFieldError('name', 'Name field has to need unique value');
+        }
+
+        handleChange(e);
+    };
+
+    const handleOptionBuilderChange = (options: FormItemOptionModel[]) => {
+        setFieldValue('options', options ?? []);
+    };
+
     return (
         <form
-            onSubmit={onSubmit}
-            onReset={onReset}
+            onSubmit={handleSubmit}
+            onReset={handleReset}
             className="flex flex-col gap-3"
         >
             <input
@@ -45,7 +133,7 @@ export const FormItemForm = ({
                 </label>
                 <select
                     {...getFieldProps('elementType')}
-                    onChange={onChangeElementType}
+                    onChange={handleChangeElementType}
                     value={values?.elementType ?? ''}
                 >
                     <option value="">Please select element type</option>
@@ -98,7 +186,7 @@ export const FormItemForm = ({
                 <input
                     type="text"
                     {...getFieldProps('name')}
-                    onChange={onChangeName}
+                    onChange={handleChangeName}
                     value={values?.name ?? ''}
                 />
             </div>
@@ -120,32 +208,8 @@ export const FormItemForm = ({
                             ElementTypes.Radio,
                         ].includes(values?.elementType)
                     }
-                    onChange={onChangeOptionBuilder}
+                    onChange={handleOptionBuilderChange}
                 />
-                {/* <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('options')}
-                                value={
-                                    values.options
-                                        ?.map((option) => option?.value)
-                                        .join(';') ?? ''
-                                }
-                                disabled={
-                                    ![
-                                        ElementTypes.Select,
-                                        ElementTypes.Checkbox,
-                                        ElementTypes.Radio,
-                                    ].includes(values.elementType)
-                                }
-                                readOnly={
-                                    ![
-                                        ElementTypes.Select,
-                                        ElementTypes.Checkbox,
-                                        ElementTypes.Radio,
-                                    ].includes(values.elementType)
-                                }
-                            /> */}
             </div>
             <div className="flex flex-col">
                 <label className="">Required:</label>
@@ -163,7 +227,7 @@ export const FormItemForm = ({
             <div className="flex flex-row justify-center items-stretch my-6">
                 {values?.id && (
                     <button className="button flex-1" type="reset">
-                        Reset
+                        Cancel
                     </button>
                 )}
                 <button

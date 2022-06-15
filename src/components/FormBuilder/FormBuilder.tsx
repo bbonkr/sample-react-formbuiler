@@ -1,136 +1,60 @@
 import React, { useEffect, useState } from 'react';
-import type { ElementType } from '../FormRenderer/types';
-import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
 import { useFormsApi } from '../../hooks/useFormsApi';
-import { FormItemModel, FormItemOptionModel, FormModel } from '../../api';
+import { FormItemModel, FormModel, LanguageModel } from '../../api';
 import { FormItemForm } from './FormItemForm';
 import Modal from '../Modal';
 import LanguageSelector from '../LanguageSelector';
-import { formItemModelValidationSchema } from '../../lib/ValidationSchema';
-
-// const validationSchema: SchemaOf<FormItemModel> = object({
-//     id: string(),
-//     formId: string(),
-//     title: string(),
-//     elementType: mixed<ElementTypes>()
-//         .required()
-//         .oneOf([...Object.values(ElementTypes)]),
-//     label: string().required(),
-//     name: string().required(),
-//     description: string(),
-//     options: array<FormItemOptionModel>().of(
-//         object({
-//             id: string(),
-//             formItemId: string(),
-//             value: string(),
-//             text: string(),
-//             ordinal: number(),
-//         }),
-//     ),
-//     isRequired: boolean(),
-//     inputType: string(),
-//     placeholder: string(),
-//     ordinal: number(),
-// });
-
-// const formItemValidationSchema: SchemaOf<FormModel> = object({
-//     id: string(),
-//     title: string().required(),
-//     items: array<FormItemModel>().of(validationSchema),
-//     resultsCount: number(),
-// });
 
 const FormBuilder = () => {
-    const [currentFormSourceId, setCurrentFormSourceId] = useState<string>();
-    const [currentFormSource, setCurrentFormSource] = useState<FormModel>();
+    const [currentFormId, setCurrentFormId] = useState<string>();
+    const [currentForm, setCurrentForm] = useState<FormModel>();
+    const [currentFormItem, setCurrentFormItem] =
+        useState<Partial<FormItemModel>>();
+    const [currentLanguage, setCurrentLanguage] = useState<LanguageModel>();
 
-    // const { addOrUpdateFormData, removeFormData } = useLocalStorage();
     const {
         formPagedModel,
-        // forms,
         addedOrUpdatedFormId,
         addForm,
         updateForm,
         deleteForm,
     } = useFormsApi();
 
-    const {
-        values,
-        errors,
-        isValid,
-        isValidating,
-        isSubmitting,
-        handleSubmit,
-        handleReset,
-        handleChange,
-        getFieldProps,
-        setValues,
-        setFieldValue,
-        setFieldError,
-        resetForm,
-    } = useFormik<Partial<FormItemModel>>({
-        initialValues: undefined,
-        enableReinitialize: true,
-        validationSchema: formItemModelValidationSchema,
-        onSubmit: (v, helper) => {
-            if (isValid) {
-                const formItem = v as FormItemModel;
+    const handleEditedFormItem = (formItem: FormItemModel) => {
+        setCurrentForm((prevState) => {
+            const current = prevState ?? {
+                // id: `${+new Date()}`,
+                id: '',
+                items: [],
+            };
 
-                let hasSameName = false;
-                currentFormSource?.items?.forEach((item) => {
-                    if (
-                        item.id !== formItem.id &&
-                        item.name === formItem.name
-                    ) {
-                        hasSameName = true;
-                    }
-                });
-
-                if (hasSameName) {
-                    setFieldError(
-                        'name',
-                        'Name field has to need unique value',
-                    );
-                } else {
-                    setCurrentFormSource((prevState) => {
-                        const current = prevState ?? {
-                            // id: `${+new Date()}`,
-                            id: '',
-                            items: [],
-                        };
-
-                        const index = current.items.findIndex(
-                            (x) => x.id === formItem.id,
-                        );
-                        const temp = current.items.slice();
-                        if (index >= 0) {
-                            temp.splice(index, 1, formItem);
-                        } else {
-                            temp.push(formItem);
-                        }
-
-                        return {
-                            ...current,
-                            items: [
-                                ...temp.map((t, i) => ({
-                                    ...t,
-                                    formId: current.id,
-                                    ordinal: i + 1,
-                                })),
-                            ],
-                        };
-                    });
-
-                    helper.resetForm({});
-                }
+            const index = current.items.findIndex((x) => x.id === formItem.id);
+            const temp = current.items.slice();
+            if (index >= 0) {
+                temp.splice(index, 1, formItem);
+            } else {
+                temp.push(formItem);
             }
-        },
-        onReset: (v, helper) => {},
-    });
 
-    const handleOptionBuilderChange = (options: FormItemOptionModel[]) => {
-        setFieldValue('options', options ?? []);
+            return {
+                ...current,
+                items: [
+                    ...temp.map((t, i) => ({
+                        ...t,
+                        formId: current.id,
+                        ordinal: i + 1,
+                    })),
+                ],
+            };
+        });
+
+        // close modal
+        setCurrentFormItem((_) => undefined);
+    };
+
+    const handleClickCancelFormItem = () => {
+        setCurrentFormItem((_) => undefined);
     };
 
     const handleInputChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,53 +62,44 @@ const FormBuilder = () => {
         const value = e.target.value;
 
         if (name === 'title') {
-            setCurrentFormSource((prevState) => ({
+            setCurrentForm((prevState) => ({
                 ...prevState,
                 [name]: value,
             }));
         }
     };
 
-    const handleChangeElementType = (
-        e: React.ChangeEvent<HTMLSelectElement>,
-    ) => {
-        const selectedElementType = e.target.value as ElementType;
-
-        if (!['select', 'checkbox', 'radio'].includes(selectedElementType)) {
-            setFieldValue('options', undefined);
-            setFieldError('options', undefined);
-        }
-
-        if (selectedElementType === 'Radio') {
-            setFieldValue('isRequired', true);
-        } else {
-            setFieldValue('isRequired', false);
-        }
-
-        handleChange(e);
-    };
-
     const handleEdit = (item: FormItemModel) => {
-        setValues(item);
+        setCurrentFormItem((_) => item);
     };
 
     const handleDelete = (item: FormItemModel) => {
-        setCurrentFormSource((prevState) => {
-            const index = prevState.items.findIndex((x) => x.id === item.id);
+        setCurrentForm((prevState) => {
+            const tempItems = prevState.items.slice();
+
+            const index = tempItems.findIndex((x) => x.id === item.id);
+
             if (index >= 0) {
+                tempItems.splice(index, 1);
+                tempItems.forEach((item, index) => {
+                    item.ordinal = index + 1;
+                });
+
                 return {
                     ...prevState,
-                    items: [...prevState.items.filter((x) => x.id !== item.id)],
+                    items: [...tempItems],
                 };
             }
 
             return prevState;
         });
-        resetForm(undefined);
+
+        // close modal
+        setCurrentFormItem((_) => undefined);
     };
 
     const handleChangeOrder = (item: FormItemModel, indexToChange: number) => {
-        setCurrentFormSource((prevState) => {
+        setCurrentForm((prevState) => {
             if (indexToChange >= 0 && indexToChange < prevState.items.length) {
                 const currentIndex = prevState.items.findIndex(
                     (x) => x.id === item.id,
@@ -194,6 +109,10 @@ const FormBuilder = () => {
                     const temp = [...prevState.items];
                     temp.splice(currentIndex, 1);
                     temp.splice(indexToChange, 0, item);
+
+                    temp.forEach((item, index) => {
+                        item.ordinal = index + 1;
+                    });
 
                     return {
                         ...prevState,
@@ -206,79 +125,67 @@ const FormBuilder = () => {
         });
     };
 
-    const handleChangeFormSourceSelect = (
+    const handleChangeFormSelect = (
         e: React.ChangeEvent<HTMLSelectElement>,
     ) => {
         const formSourceId = e.target.value;
 
-        setCurrentFormSourceId((_) => formSourceId);
+        setCurrentFormId((_) => formSourceId);
     };
 
-    const handleNewFormSource = () => {
-        setCurrentFormSourceId((_) => '');
-        setCurrentFormSource((_) => ({
-            // id: `${+new Date()}`,
-            id: '',
-            title: '',
-            items: [],
-        }));
+    const handleClickNewForm = () => {
+        setCurrentFormId((_) => '');
     };
 
-    const handleSaveFormSource = () => {
-        if (currentFormSource.id) {
-            updateForm(currentFormSource);
+    const handleClickSaveForm = () => {
+        if (currentForm.id) {
+            updateForm(currentForm);
         } else {
-            addForm(currentFormSource);
+            addForm(currentForm);
         }
-        // setCurrentFormSourceId((_) => currentFormSource.id);
     };
 
-    const handleDeleteFormSource = () => {
-        deleteForm(currentFormSource);
+    const handleClickDeleteForm = () => {
+        deleteForm(currentForm);
 
-        setCurrentFormSourceId((_) => '');
-    };
-
-    const handleChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const nameValue = e.target.value;
-        let hasSameName = false;
-        currentFormSource?.items?.forEach((item) => {
-            if (item.id !== values.id && item.name === nameValue) {
-                hasSameName = true;
-            }
-        });
-
-        if (hasSameName) {
-            setFieldError('name', 'Name field has to need unique value');
-        }
-
-        handleChange(e);
+        setCurrentFormId((_) => '');
     };
 
     const handleClickAddField = () => {
-        setValues({});
+        // setValues({});
+        setCurrentFormItem((_) => ({}));
     };
 
     const handleCloseModal = () => {
-        setValues(undefined);
+        // setValues(undefined);
+        setCurrentFormItem((_) => undefined);
+    };
+
+    const handleChangeLanguage = (language: LanguageModel) => {
+        setCurrentLanguage((_) => language);
     };
 
     useEffect(() => {
-        if (currentFormSourceId) {
+        if (currentFormId) {
             const formSource = formPagedModel?.items?.find(
-                (x) => x.id === currentFormSourceId,
+                (x) => x.id === currentFormId,
             );
 
-            // console.info('formSource:', formSource);
-            setCurrentFormSource((_) => formSource);
+            setCurrentForm((_) => formSource);
         } else {
-            setCurrentFormSource((_) => undefined);
+            setCurrentForm((_) => ({
+                // new form
+            }));
         }
-    }, [currentFormSourceId]);
+    }, [currentFormId]);
 
     useEffect(() => {
-        setCurrentFormSourceId((_) => addedOrUpdatedFormId ?? '');
+        setCurrentFormId((_) => addedOrUpdatedFormId ?? '');
     }, [addedOrUpdatedFormId]);
+
+    useEffect(() => {
+        console.info('Selected language: ', currentLanguage);
+    }, [currentLanguage]);
 
     return (
         <React.Fragment>
@@ -287,8 +194,8 @@ const FormBuilder = () => {
                     <div className="flex-1">
                         <select
                             className="w-full"
-                            onChange={handleChangeFormSourceSelect}
-                            value={currentFormSourceId}
+                            onChange={handleChangeFormSelect}
+                            value={currentFormId}
                         >
                             <option value="">Select form</option>
                             {formPagedModel?.items?.map((item) => {
@@ -303,21 +210,18 @@ const FormBuilder = () => {
 
                     <div className="flex gap-3">
                         {/* <ImportData /> */}
-                        <button
-                            className="button"
-                            onClick={handleNewFormSource}
-                        >
+                        <button className="button" onClick={handleClickNewForm}>
                             New
                         </button>
                         <button
                             className="button danger"
-                            onClick={handleDeleteFormSource}
+                            onClick={handleClickDeleteForm}
                         >
                             Delete
                         </button>
                         <button
                             className="button"
-                            onClick={handleSaveFormSource}
+                            onClick={handleClickSaveForm}
                         >
                             Save
                         </button>
@@ -326,7 +230,7 @@ const FormBuilder = () => {
 
                 <hr className="my-3" />
 
-                {currentFormSource && (
+                {currentForm && (
                     <div className="flex flex-col">
                         <div className="flex flex-col my-6 ">
                             <label htmlFor="formbuilder-form-language">
@@ -334,9 +238,11 @@ const FormBuilder = () => {
                             </label>
                             <LanguageSelector
                                 id="formbuilder-form-language"
-                                disabled={!Boolean(currentFormSource?.id)}
+                                disabled={!Boolean(currentForm?.id)}
+                                value={currentLanguage?.id ?? ''}
+                                onChange={handleChangeLanguage}
                             />
-                            {!Boolean(currentFormSource?.id) && (
+                            {!Boolean(currentForm?.id) && (
                                 <p className="text-sm font-light text-slate-500 dark:text-slate-400">
                                     You can change language after save form data
                                 </p>
@@ -352,7 +258,7 @@ const FormBuilder = () => {
                                 id="formbuilder-form-title"
                                 name="title"
                                 title="Title"
-                                value={currentFormSource?.title ?? ''}
+                                value={currentForm?.title ?? ''}
                                 onChange={handleInputChanged}
                             />
                         </div>
@@ -371,7 +277,7 @@ const FormBuilder = () => {
                     <div className="flex-1">
                         <h2 className="text-lg font-extrabold my-2">Preview</h2>
                         <FormRenderer
-                            formItems={currentFormSource?.items}
+                            formItems={currentForm?.items}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
                             onChangeOrder={handleChangeOrder}
@@ -385,37 +291,28 @@ const FormBuilder = () => {
                         <div className="flex-1">
                             Result:
                             <pre className="break-words whitespace-pre-wrap bg-slate-600 text-slate-200 px-2 py-3 border-2 rounded border-slate-600">
-                                {JSON.stringify(
-                                    currentFormSource?.items,
-                                    null,
-                                    4,
-                                )}
+                                {JSON.stringify(currentForm?.items, null, 4)}
                             </pre>
                         </div>
                         <div className="flex-1">
                             Current Form item:
                             <pre className="break-words whitespace-pre-wrap bg-slate-600 text-slate-200 px-2 py-3 border-2 rounded border-slate-600">
-                                {JSON.stringify(values, null, 4)}
+                                {JSON.stringify(currentFormItem, null, 4)}
                             </pre>
                         </div>
                     </div>
                 </div>
             </div>
             <Modal
-                isOpen={Boolean(values)}
+                isOpen={Boolean(currentFormItem)}
                 title={<h2 className="font-extrabold my-2">Form Item</h2>}
                 onClose={handleCloseModal}
             >
                 <FormItemForm
-                    values={values}
-                    isValid={isValid}
-                    errors={errors}
-                    getFieldProps={getFieldProps}
-                    onSubmit={handleSubmit}
-                    onReset={handleReset}
-                    onChangeElementType={handleChangeElementType}
-                    onChangeName={handleChangeName}
-                    onChangeOptionBuilder={handleOptionBuilderChange}
+                    initialFormItem={currentFormItem}
+                    form={currentForm}
+                    onEdited={handleEditedFormItem}
+                    onCancel={handleClickCancelFormItem}
                 />
             </Modal>
         </React.Fragment>

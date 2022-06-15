@@ -72,39 +72,36 @@ export const OptionsBuilder = ({
             if (foundIndex >= 0) {
                 tempOptions.splice(foundIndex, 1);
 
+                tempOptions.forEach((item, index) => {
+                    item.ordinal = index + 1;
+                });
+
                 onChange([...tempOptions]);
-                console.info('[INFO] Option item removed');
             }
         }
     };
 
-    const handleOptionUpClick =
+    const handleClickToChangeOptionOrdinal =
         (option: FormItemOptionModel, indexToChange: number) => () => {
-            updateOptionOrdinal(option, indexToChange);
-        };
-    const handleOptionDownClick =
-        (option: FormItemOptionModel, indexToChange: number) => () => {
-            updateOptionOrdinal(option, indexToChange);
-        };
+            if (onChange) {
+                const tempOptions = (options ?? []).slice();
 
-    const updateOptionOrdinal = (
-        option: FormItemOptionModel,
-        indexToChange: number,
-    ) => {
-        if (onChange) {
-            const tempOptions = (options ?? []).slice();
+                const foundIndex = tempOptions.findIndex(
+                    (x) => x.id === option.id,
+                );
 
-            const foundIndex = tempOptions.findIndex((x) => x.id === option.id);
+                if (foundIndex >= 0) {
+                    tempOptions.splice(foundIndex, 1);
+                    tempOptions.splice(indexToChange, 0, option);
 
-            if (foundIndex >= 0) {
-                tempOptions.splice(foundIndex, 1);
-                tempOptions.splice(indexToChange, 0, option);
+                    tempOptions.forEach((item, index) => {
+                        item.ordinal = index + 1;
+                    });
 
-                onChange([...tempOptions]);
-                console.info('[INFO] Option item removed');
+                    onChange([...tempOptions]);
+                }
             }
-        }
-    };
+        };
 
     if (disabled) {
         return (
@@ -158,7 +155,10 @@ export const OptionsBuilder = ({
                                 disabled={
                                     !arr || arr.length === 0 || index === 0
                                 }
-                                onClick={handleOptionUpClick(option, index - 1)}
+                                onClick={handleClickToChangeOptionOrdinal(
+                                    option,
+                                    index - 1,
+                                )}
                             >
                                 <span className="text-sm">Up</span>
                             </button>
@@ -170,7 +170,10 @@ export const OptionsBuilder = ({
                                     arr.length === 0 ||
                                     index === arr.length - 1
                                 }
-                                onClick={handleOptionUpClick(option, index + 1)}
+                                onClick={handleClickToChangeOptionOrdinal(
+                                    option,
+                                    index + 1,
+                                )}
                             >
                                 <span className="text-sm">Down</span>
                             </button>
