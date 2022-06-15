@@ -1,18 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import FormRenderer from '../FormRenderer/FormRenderer';
 import { useFormsApi } from '../../hooks/useFormsApi';
-import { FormItemModel, FormModel, LanguageModel } from '../../api';
+import {
+    FormItemModel,
+    FormModel,
+    LanguageModel,
+    TranslationsApi,
+} from '../../api';
 import { FormItemForm } from './FormItemForm';
 import Modal from '../Modal';
 import LanguageSelector from '../LanguageSelector';
 
 const FormBuilder = () => {
+    const baseUrl = process.env.NEXT_PUBLIC_API ?? '';
     const defaultLanguageCode = 'en';
+
     const [currentFormId, setCurrentFormId] = useState<string>();
     const [currentForm, setCurrentForm] = useState<FormModel>();
     const [currentFormItem, setCurrentFormItem] =
         useState<Partial<FormItemModel>>();
     const [currentLanguage, setCurrentLanguage] = useState<LanguageModel>();
+    const [translating, setTranslating] = useState(false);
+
+    const translationApiClient = useMemo(() => {
+        const client = new TranslationsApi(undefined, baseUrl);
+        return client;
+    }, []);
 
     const {
         formPagedModel,
@@ -210,6 +223,62 @@ const FormBuilder = () => {
         setCurrentLanguage((_) => language);
     };
 
+    const handleClickTranslate = (name: string) => () => {
+        setTranslating((_) => true);
+        translationApiClient
+            .apiv10TranslationsTranslate({
+                getTranslatedTextQuery: {
+                    originLanguageCode: defaultLanguageCode,
+                    translateToLanguageCode: currentLanguage?.code,
+                    text: currentForm[name],
+                    isHtml: false,
+                },
+            })
+            .then((response) => {
+                const translatedText = response.data.text;
+
+                setCurrentForm((prevState) => {
+                    if (currentLanguage) {
+                        const tempLocales = prevState.locales?.slice() ?? [];
+                        const foundItem = tempLocales.find(
+                            (x) => x.languageId === currentLanguage.id,
+                        );
+                        const index = tempLocales.findIndex(
+                            (x) => x.languageId === currentLanguage.id,
+                        );
+
+                        if (index >= 0) {
+                            tempLocales.splice(index, 1, {
+                                ...foundItem,
+                                [name]: translatedText,
+                            });
+                        } else {
+                            tempLocales.push({
+                                languageId: currentLanguage.id,
+                                languageCode: currentLanguage.code,
+                                [name]: translatedText,
+                            });
+                        }
+
+                        return {
+                            ...prevState,
+                            locales: [
+                                ...tempLocales.filter(
+                                    (x) =>
+                                        x.languageCode !== defaultLanguageCode,
+                                ),
+                            ],
+                        };
+                    }
+
+                    return prevState;
+                });
+            })
+            .finally(() => {
+                setTranslating((_) => false);
+            });
+    };
+
     useEffect(() => {
         if (currentFormId) {
             const formSource = formPagedModel?.items?.find(
@@ -294,9 +363,11 @@ const FormBuilder = () => {
                 {currentForm && (
                     <div className="flex flex-col">
                         <div className="flex flex-col my-6 ">
-                            <label htmlFor="formbuilder-form-language">
-                                Language:
-                            </label>
+                            <div className="flex flex-row">
+                                <label htmlFor="formbuilder-form-language flex-1">
+                                    Language:
+                                </label>
+                            </div>
                             <LanguageSelector
                                 id="formbuilder-form-language"
                                 disabled={!Boolean(currentForm?.id)}
@@ -311,9 +382,25 @@ const FormBuilder = () => {
                         </div>
 
                         <div className="flex flex-col my-6 ">
-                            <label htmlFor="formbuilder-form-title">
-                                Title:
-                            </label>
+                            <div className="flex flex-row justify-between">
+                                <label htmlFor="formbuilder-form-title flex-1">
+                                    Title:
+                                </label>
+                                {currentLanguage &&
+                                    currentLanguage.code !==
+                                        defaultLanguageCode && (
+                                        <button
+                                            type="button"
+                                            className="button sm"
+                                            onClick={handleClickTranslate(
+                                                'title',
+                                            )}
+                                            disabled={translating}
+                                        >
+                                            Translate
+                                        </button>
+                                    )}
+                            </div>
                             <input
                                 type="text"
                                 id="formbuilder-form-title"
