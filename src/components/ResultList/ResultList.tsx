@@ -8,13 +8,21 @@ const ResultList = () => {
 
     const { formPagedModel } = useFormsApi();
 
-    const { results, getResults } = useResultsApi();
+    const { getResultsOptions, results, getResults } = useResultsApi();
 
     const handleChangeFormSelect = (
         e: React.ChangeEvent<HTMLSelectElement>,
     ) => {
         const formId = e.target.value;
         setCurrentFormId((_) => formId);
+    };
+
+    const handleClickLoadPages = (page: number) => () => {
+        getResults(
+            getResultsOptions?.page ?? 1 + page,
+            getResultsOptions.limit,
+            currentFormId,
+        );
     };
 
     useEffect(() => {
@@ -62,7 +70,7 @@ const ResultList = () => {
                                         <td className="text-center py-1">
                                             {item.id}
                                         </td>
-                                        <td className="text-center py-1">
+                                        <td className="py-1">
                                             <Link
                                                 href={`/forms/${item.formId}`}
                                             >
@@ -81,6 +89,28 @@ const ResultList = () => {
                     )}
                 </tbody>
             </table>
+
+            <div className="flex flex-row justify-center items-center gap-6 my-6">
+                <button
+                    type="button"
+                    className="button flex"
+                    onClick={handleClickLoadPages(-1)}
+                    disabled={(results?.currentPage ?? 1) === 1}
+                >
+                    Previou page
+                </button>
+                <button
+                    type="button"
+                    className="button flex"
+                    onClick={handleClickLoadPages(1)}
+                    disabled={
+                        (results?.totalPages ?? 1) <= 1 ||
+                        results.totalPages === results.currentPage
+                    }
+                >
+                    Next page
+                </button>
+            </div>
         </div>
     );
 };

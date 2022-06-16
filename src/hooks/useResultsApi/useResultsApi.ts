@@ -131,6 +131,7 @@ export const useResultsApi = (props?: UseResultsApiProps) => {
     return {
         results,
         result,
+        getResultsOptions,
         getResults,
         getResult,
         addResult,
