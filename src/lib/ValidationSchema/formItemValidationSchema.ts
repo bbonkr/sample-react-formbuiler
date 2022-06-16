@@ -1,6 +1,21 @@
 import { array, boolean, mixed, number, object, SchemaOf, string } from 'yup';
-import { ElementTypes, FormItemModel, FormItemOptionModel } from '../../api';
+import {
+    ElementTypes,
+    FormItemLocaledModel,
+    FormItemModel,
+    FormItemOptionModel,
+} from '../../api';
 import { formItemOptionModelValidationSchema } from './formItemOptionModelValidationSchema';
+
+export const formItemLocaledModelValidationSchema: SchemaOf<FormItemLocaledModel> =
+    object().shape({
+        formId: string(),
+        languageId: string(),
+        languageCode: string(),
+        label: string(),
+        description: string(),
+        placeholder: string(),
+    });
 
 export const formItemModelValidationSchema: SchemaOf<FormItemModel> =
     object().shape({
@@ -20,4 +35,7 @@ export const formItemModelValidationSchema: SchemaOf<FormItemModel> =
         inputType: string(),
         placeholder: string(),
         ordinal: number(),
+        locales: array<FormItemLocaledModel>().of(
+            formItemLocaledModelValidationSchema,
+        ),
     });

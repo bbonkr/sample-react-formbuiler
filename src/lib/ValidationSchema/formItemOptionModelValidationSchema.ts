@@ -1,5 +1,13 @@
-import { number, object, SchemaOf, string } from 'yup';
-import { FormItemOptionModel } from '../../api';
+import { number, object, SchemaOf, string, array } from 'yup';
+import { FormItemOptionLocaledModel, FormItemOptionModel } from '../../api';
+
+export const formItemOptionLocaledModelValidationSchema: SchemaOf<FormItemOptionLocaledModel> =
+    object().shape({
+        formItemOptionId: string(),
+        languageId: string(),
+        languageCode: string(),
+        text: string().required(),
+    });
 
 export const formItemOptionModelValidationSchema: SchemaOf<FormItemOptionModel> =
     object().shape({
@@ -8,4 +16,7 @@ export const formItemOptionModelValidationSchema: SchemaOf<FormItemOptionModel> 
         value: string(),
         text: string(),
         ordinal: number(),
+        locales: array<FormItemOptionLocaledModel>().of(
+            formItemOptionLocaledModelValidationSchema,
+        ),
     });
