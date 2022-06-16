@@ -2,6 +2,8 @@ name: Verify pr build
 
 on:
   pull_request:
+    paths-ignore: 
+      - '**/*.md'
 
 jobs:
   build:
