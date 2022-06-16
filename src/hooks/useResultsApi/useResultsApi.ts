@@ -11,7 +11,11 @@ import useSwr from 'swr';
 import { useEffect, useState } from 'react';
 import { rootActions } from '../../store/actions';
 
-export const useResultsApi = () => {
+interface UseResultsApiProps {
+    addResultCallback?: (result: ResultModel) => void;
+}
+
+export const useResultsApi = (props?: UseResultsApiProps) => {
     const baseUrl = process.env.NEXT_PUBLIC_API ?? '';
     const { results } = useSelector<RootState, FormResultState>(
         (s) => s.resultState,
@@ -94,7 +98,12 @@ export const useResultsApi = () => {
                 },
             })
             .then((response) => {
-                dispatch(rootActions.result.addOrUpdate(response.data));
+                const responseData = response.data;
+                dispatch(rootActions.result.addOrUpdate(responseData));
+
+                if (props && props.addResultCallback) {
+                    props.addResultCallback(responseData);
+                }
             });
     };
 

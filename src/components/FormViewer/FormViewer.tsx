@@ -4,7 +4,9 @@ import FormRenderer from '../FormRenderer/FormRenderer';
 import { FormAnswer, FormResult } from '../FormRenderer/types';
 import { string } from 'yup';
 import { useResultsApi } from '../../hooks/useResultsApi';
-import { FormItemModel, FormModel } from '../../api';
+import { FormItemModel, FormModel, LanguageModel } from '../../api';
+import LanguageSelector from '../LanguageSelector';
+import { useRouter } from 'next/router';
 
 interface FormViewerProps {
     record: FormModel;
@@ -13,9 +15,18 @@ interface FormViewerProps {
 type FormValues = Record<string, string | string[]>;
 
 const FormViewer = ({ record }: FormViewerProps) => {
-    const { addResult } = useResultsApi();
+    const defaultLanguageCode = 'en';
+
+    const router = useRouter();
+
+    const { addResult } = useResultsApi({
+        addResultCallback: (_) => {
+            router.replace(`/forms/${record.id}/thankyou`);
+        },
+    });
 
     const [result, setResult] = useState<FormResult>();
+    const [currentLanguage, setCurrentLanguage] = useState<LanguageModel>();
 
     const validateItem = (
         item: FormItemModel,
@@ -104,10 +115,27 @@ const FormViewer = ({ record }: FormViewerProps) => {
         });
     };
 
+    const handleChangeLanguage = (language: LanguageModel) => {
+        setCurrentLanguage((_) => language);
+    };
+
     return (
         <div>
             <div className="flex flex-col justify-center items-stretch gap-3">
                 <div className="flex flex-col py-3 flex-1">
+                    <div className="my-6 flex flex-col justify-center items-center">
+                        <h2 className="text-lg font-semibold">
+                            {record.title}
+                        </h2>
+
+                        <hr className="my-3" />
+
+                        <LanguageSelector
+                            value={currentLanguage?.id}
+                            onChange={handleChangeLanguage}
+                        />
+                    </div>
+
                     <form
                         onSubmit={handleSubmit}
                         className="flex flex-col justify-center items-stretch gap-6"
@@ -116,6 +144,8 @@ const FormViewer = ({ record }: FormViewerProps) => {
                             formItems={record.items}
                             values={values}
                             errors={errors}
+                            language={currentLanguage}
+                            defaultLanguageCode={defaultLanguageCode}
                             onChangeItemValue={handleChangeItemValue}
                         />
 
