@@ -1718,12 +1718,13 @@ export const ResultsApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @param {string} [formId] 
          * @param {number} [page] 
          * @param {number} [limit] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiv10ResultsGetResults: async (page?: number, limit?: number, options: any = {}): Promise<RequestArgs> => {
+        apiv10ResultsGetResults: async (formId?: string, page?: number, limit?: number, options: any = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/Results`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1735,6 +1736,10 @@ export const ResultsApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (formId !== undefined) {
+                localVarQueryParameter['FormId'] = formId;
+            }
 
             if (page !== undefined) {
                 localVarQueryParameter['Page'] = page;
@@ -1787,13 +1792,14 @@ export const ResultsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} [formId] 
          * @param {number} [page] 
          * @param {number} [limit] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiv10ResultsGetResults(page?: number, limit?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResultModelPagedModel>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10ResultsGetResults(page, limit, options);
+        async apiv10ResultsGetResults(formId?: string, page?: number, limit?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ResultModelPagedModel>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiv10ResultsGetResults(formId, page, limit, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -1826,13 +1832,14 @@ export const ResultsApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {string} [formId] 
          * @param {number} [page] 
          * @param {number} [limit] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiv10ResultsGetResults(page?: number, limit?: number, options?: any): AxiosPromise<ResultModelPagedModel> {
-            return localVarFp.apiv10ResultsGetResults(page, limit, options).then((request) => request(axios, basePath));
+        apiv10ResultsGetResults(formId?: string, page?: number, limit?: number, options?: any): AxiosPromise<ResultModelPagedModel> {
+            return localVarFp.apiv10ResultsGetResults(formId, page, limit, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1871,6 +1878,13 @@ export interface ResultsApiApiv10ResultsGetResultByIdRequest {
  * @interface ResultsApiApiv10ResultsGetResultsRequest
  */
 export interface ResultsApiApiv10ResultsGetResultsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof ResultsApiApiv10ResultsGetResults
+     */
+    readonly formId?: string
+
     /**
      * 
      * @type {number}
@@ -1923,7 +1937,7 @@ export class ResultsApi extends BaseAPI {
      * @memberof ResultsApi
      */
     public apiv10ResultsGetResults(requestParameters: ResultsApiApiv10ResultsGetResultsRequest = {}, options?: any) {
-        return ResultsApiFp(this.configuration).apiv10ResultsGetResults(requestParameters.page, requestParameters.limit, options).then((request) => request(this.axios, this.basePath));
+        return ResultsApiFp(this.configuration).apiv10ResultsGetResults(requestParameters.formId, requestParameters.page, requestParameters.limit, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

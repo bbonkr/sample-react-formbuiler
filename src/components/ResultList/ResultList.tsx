@@ -1,14 +1,52 @@
 import Link from 'next/link';
-import React from 'react';
-import { ResultModelPagedModel } from '../../api';
+import React, { useEffect, useState } from 'react';
+import { useFormsApi } from '../../hooks/useFormsApi';
+import { useResultsApi } from '../../hooks/useResultsApi';
 
-interface ResultListProps {
-    records?: ResultModelPagedModel | null;
-}
+const ResultList = () => {
+    const [currentFormId, setCurrentFormId] = useState<string>();
 
-const ResultList = ({ records }: ResultListProps) => {
+    const { formPagedModel } = useFormsApi();
+
+    const { getResultsOptions, results, getResults } = useResultsApi();
+
+    const handleChangeFormSelect = (
+        e: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const formId = e.target.value;
+        setCurrentFormId((_) => formId);
+    };
+
+    const handleClickLoadPages = (page: number) => () => {
+        getResults(
+            getResultsOptions?.page ?? 1 + page,
+            getResultsOptions.limit,
+            currentFormId,
+        );
+    };
+
+    useEffect(() => {
+        getResults(1, 10, currentFormId ? currentFormId : undefined);
+    }, [currentFormId]);
+
     return (
-        <div>
+        <div className="flex flex-col justify-center items-center">
+            <div className="w-full flex flex-row flex-1">
+                <select
+                    className="w-full flex-1"
+                    onChange={handleChangeFormSelect}
+                    value={currentFormId}
+                >
+                    <option value="">All forms</option>
+                    {formPagedModel?.items?.map((item) => {
+                        return (
+                            <option key={item.id} value={item.id}>
+                                {item.title}
+                            </option>
+                        );
+                    })}
+                </select>
+            </div>
             <table className="table w-full">
                 <thead>
                     <tr className="border-y-2">
@@ -18,7 +56,7 @@ const ResultList = ({ records }: ResultListProps) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {!records || records?.items.length === 0 ? (
+                    {!results || results?.items.length === 0 ? (
                         <tr>
                             <td className="text-center" colSpan={3}>
                                 No item
@@ -26,13 +64,13 @@ const ResultList = ({ records }: ResultListProps) => {
                         </tr>
                     ) : (
                         <React.Fragment>
-                            {records.items.map((item) => {
+                            {results.items.map((item) => {
                                 return (
                                     <tr key={item.id} className="">
                                         <td className="text-center py-1">
                                             {item.id}
                                         </td>
-                                        <td className="text-center py-1">
+                                        <td className="py-1">
                                             <Link
                                                 href={`/forms/${item.formId}`}
                                             >
@@ -51,6 +89,28 @@ const ResultList = ({ records }: ResultListProps) => {
                     )}
                 </tbody>
             </table>
+
+            <div className="flex flex-row justify-center items-center gap-6 my-6">
+                <button
+                    type="button"
+                    className="button flex"
+                    onClick={handleClickLoadPages(-1)}
+                    disabled={(results?.currentPage ?? 1) === 1}
+                >
+                    Previou page
+                </button>
+                <button
+                    type="button"
+                    className="button flex"
+                    onClick={handleClickLoadPages(1)}
+                    disabled={
+                        (results?.totalPages ?? 1) <= 1 ||
+                        results.totalPages === results.currentPage
+                    }
+                >
+                    Next page
+                </button>
+            </div>
         </div>
     );
 };
