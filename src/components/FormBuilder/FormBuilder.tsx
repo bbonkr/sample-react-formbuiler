@@ -447,10 +447,39 @@ const FormBuilder = () => {
                             type="button"
                             className="button primary"
                             onClick={handleClickAddField}
-                            disabled={(currentForm?.resultsCount ?? 0) > 0}
+                            disabled={
+                                (currentLanguage?.code ??
+                                    defaultLanguageCode) !==
+                                    defaultLanguageCode ||
+                                (currentForm?.resultsCount ?? 0) > 0
+                            }
                         >
                             Add field
                         </button>
+                        <div>
+                            {((currentLanguage?.code ?? defaultLanguageCode) !==
+                                defaultLanguageCode ||
+                                (currentForm?.resultsCount ?? 0) > 0) && (
+                                <React.Fragment>
+                                    <p className="text-sm font-light text-slate-500 dark:text-slate-400">
+                                        Why can not use 'Add field' button?
+                                    </p>
+                                    <ul className="list-disc list-inside text-sm font-light text-slate-500 dark:text-slate-400">
+                                        {(currentLanguage?.code ??
+                                            defaultLanguageCode) !==
+                                            defaultLanguageCode && (
+                                            <li>{`Selected language is not ${defaultLanguageCode}`}</li>
+                                        )}
+                                        {(currentForm?.resultsCount ?? 0) >
+                                            0 && (
+                                            <li>{`This form has ${
+                                                currentForm?.resultsCount ?? 0
+                                            } results`}</li>
+                                        )}
+                                    </ul>
+                                </React.Fragment>
+                            )}
+                        </div>
                     </div>
                 )}
 
