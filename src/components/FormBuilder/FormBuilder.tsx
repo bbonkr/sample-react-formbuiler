@@ -30,6 +30,7 @@ const FormBuilder = () => {
     const {
         formPagedModel,
         addedOrUpdatedFormId,
+        getForms,
         addForm,
         updateForm,
         deleteForm,
@@ -292,6 +293,11 @@ const FormBuilder = () => {
         }
     };
 
+    const handleClickReloadForms = () => {
+        setCurrentFormId((_) => '');
+        getForms();
+    };
+
     useEffect(() => {
         if (currentFormId) {
             const formSource = formPagedModel?.items?.find(
@@ -310,31 +316,11 @@ const FormBuilder = () => {
         setCurrentFormId((_) => addedOrUpdatedFormId ?? '');
     }, [addedOrUpdatedFormId]);
 
-    useEffect(() => {
-        if (currentForm) {
-            console.info(
-                'currentForm, currentLanguage',
-                currentForm,
-                currentLanguage,
-            );
-
-            // const localedForm = currentForm.locales?.find(
-            //     (x) =>
-            //         x.languageId === currentLanguage?.id ?? defaultLanguageCode,
-            // );
-
-            // setCurrentForm((prevState) => ({
-            //     ...prevState,
-            //     title: localedForm?.title,
-            // }));
-        }
-    }, [currentLanguage]);
-
     return (
         <React.Fragment>
             <div className="flex flex-col">
                 <div className="flex flex-row justify-center items-stretch gap-3">
-                    <div className="flex-1">
+                    <div className="flex-1 flex flex-row">
                         <select
                             className="w-full"
                             onChange={handleChangeFormSelect}
@@ -349,6 +335,13 @@ const FormBuilder = () => {
                                 );
                             })}
                         </select>
+                        <button
+                            type="button"
+                            className="button flex"
+                            onClick={handleClickReloadForms}
+                        >
+                            Reload
+                        </button>
                     </div>
 
                     <div className="flex gap-3">
@@ -359,16 +352,32 @@ const FormBuilder = () => {
                         <button
                             className="button danger"
                             onClick={handleClickDeleteForm}
+                            disabled={(currentForm?.resultsCount ?? 0) > 0}
                         >
                             Delete
                         </button>
                         <button
                             className="button"
                             onClick={handleClickSaveForm}
+                            disabled={(currentForm?.resultsCount ?? 0) > 0}
                         >
                             Save
                         </button>
                     </div>
+                </div>
+                <div className="my-3 mx-1">
+                    <p>
+                        {typeof currentForm?.resultsCount === 'number'
+                            ? `Selected form has ${currentForm?.resultsCount} result(s).`
+                            : ''}
+                    </p>
+                    <p>
+                        <span className="text-red-500 font-bold">
+                            {(currentForm?.resultsCount ?? 0) > 0
+                                ? `To avoid compromising response data, this form cannot modify or delete.`
+                                : ''}
+                        </span>
+                    </p>
                 </div>
 
                 <hr className="my-3" />
@@ -438,6 +447,7 @@ const FormBuilder = () => {
                             type="button"
                             className="button primary"
                             onClick={handleClickAddField}
+                            disabled={(currentForm?.resultsCount ?? 0) > 0}
                         >
                             Add field
                         </button>
@@ -448,7 +458,7 @@ const FormBuilder = () => {
                     <div className="flex-1">
                         <h2 className="text-lg font-extrabold my-2">Preview</h2>
                         <FormRenderer
-                            editingMode
+                            editingMode={(currentForm?.resultsCount ?? 0) === 0}
                             formItems={currentForm?.items}
                             language={currentLanguage}
                             defaultLanguageCode={defaultLanguageCode}

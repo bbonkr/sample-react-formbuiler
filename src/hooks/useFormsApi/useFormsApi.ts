@@ -87,7 +87,12 @@ export const useFormsApi = () => {
         },
     );
 
-    const getForms = (page: number, limit: number = 10, keyword?: string) => {
+    const getForms = (
+        page: number = 1,
+        limit: number = 10,
+        keyword?: string,
+    ) => {
+        setGetFormsOptions((_) => undefined);
         setGetFormsOptions((prevState) => ({
             ...prevState,
             page,
