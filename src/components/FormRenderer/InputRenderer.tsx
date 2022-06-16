@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { FilesApi, FormItemModel, UploadFileMediaModel } from '../../api';
+import {
+    FilesApi,
+    FormItemModel,
+    LanguageModel,
+    UploadFileMediaModel,
+} from '../../api';
 import { ElementTypeItem, FormValues } from './types';
 
 interface RendererProps {
@@ -7,8 +12,10 @@ interface RendererProps {
     type: ElementTypeItem;
     id: string;
     values?: FormValues;
+    language?: LanguageModel;
+    defaultLanguageCode?: string;
+
     onChange?: (item: FormItemModel, value: string | string[]) => void;
-    // onError?: (item: FormItem, message: string) => void;
 }
 
 export const InputRenderer = ({
@@ -16,6 +23,9 @@ export const InputRenderer = ({
     type,
     id,
     values,
+    language,
+    defaultLanguageCode,
+
     onChange,
 }: RendererProps) => {
     const baseUrl = process.env.NEXT_PUBLIC_API;
@@ -50,15 +60,7 @@ export const InputRenderer = ({
                     }
                 }
             } else if (e.target.type === 'file') {
-                // console.info('files', e.target.files);
                 const client = new FilesApi(undefined, baseUrl);
-
-                // const files: File[] = [];
-                // Array.prototype.forEach.call(e.target.files, (item) => {
-                //     console.info('file', item);
-                //     files.push(item);
-                //     // formData.append('files', item);
-                // });
 
                 client
                     .apiv10FilesUpload({
@@ -75,7 +77,6 @@ export const InputRenderer = ({
                         });
                     });
             } else {
-                // setInputValue((_) => value);
                 onChange(item, currentValue);
 
                 // if (onError) {
@@ -130,12 +131,19 @@ export const InputRenderer = ({
         return (
             <div className="flex gap-3">
                 {item.options?.map((option) => {
+                    const optionItemLable =
+                        (language && language.code !== defaultLanguageCode
+                            ? option.locales?.find(
+                                  (x) => x.languageId === language.id,
+                              )?.text
+                            : option.text) ?? '';
+
                     return (
                         <label key={option.id}>
                             <input
                                 type={type.inputType}
                                 name={item.name}
-                                value={option.value}
+                                value={optionItemLable}
                                 checked={
                                     values && Array.isArray(values[item.name])
                                         ? values &&
@@ -155,7 +163,7 @@ export const InputRenderer = ({
                                 }
                                 onChange={handleChangeValue}
                             />{' '}
-                            {option.text}
+                            {optionItemLable}
                         </label>
                     );
                 })}
@@ -175,7 +183,13 @@ export const InputRenderer = ({
                             ? values[item.name] ?? ''
                             : ''
                     }
-                    placeholder={item.placeholder}
+                    placeholder={
+                        (language && language.code !== defaultLanguageCode
+                            ? item.locales?.find(
+                                  (x) => x.languageId === language.id,
+                              )?.placeholder
+                            : item.placeholder) ?? ''
+                    }
                 />
 
                 {files && files.length > 0 && (

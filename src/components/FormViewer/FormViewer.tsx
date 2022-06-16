@@ -116,7 +116,6 @@ const FormViewer = ({ record }: FormViewerProps) => {
                             formItems={record.items}
                             values={values}
                             errors={errors}
-                            readonly
                             onChangeItemValue={handleChangeItemValue}
                         />
 

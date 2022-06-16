@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { FormItemOptionModel, LanguageModel } from '../../api';
+import { FormItemOptionModel, LanguageModel, TranslationsApi } from '../../api';
 
 interface OptionsBuilderProps {
     options?: FormItemOptionModel[];
     language?: LanguageModel;
+    defaultLanguageCode?: string;
+    translationApiClient?: TranslationsApi;
     disabled?: boolean;
     onChange?: (options: FormItemOptionModel[]) => void;
 }
@@ -11,10 +13,13 @@ interface OptionsBuilderProps {
 export const OptionsBuilder = ({
     options,
     language,
+    defaultLanguageCode,
+    translationApiClient,
     disabled,
     onChange,
 }: OptionsBuilderProps) => {
     const [newOptionValue, setNewOptionValue] = useState<string>();
+    const [translating, setTranslating] = useState(false);
 
     const handleNewOptionValueChange = (
         e: React.ChangeEvent<HTMLInputElement>,
@@ -45,23 +50,54 @@ export const OptionsBuilder = ({
     const handleOptionChange =
         (option: FormItemOptionModel) =>
         (e: React.ChangeEvent<HTMLInputElement>) => {
+            var value = e.target.value;
+
             if (onChange) {
                 const tempOptions = (options ?? []).slice();
-
-                const foundIndex = tempOptions.findIndex(
+                const foundOption = tempOptions.find((x) => x.id === option.id);
+                const foundOptionIndex = tempOptions.findIndex(
                     (x) => x.id === option.id,
                 );
 
-                if (foundIndex >= 0) {
-                    tempOptions.splice(foundIndex, 1, {
-                        ...option,
-                        value: e.target.value,
-                        text: e.target.value,
-                    });
+                if (language && language.code !== defaultLanguageCode) {
+                    const tempLocales = foundOption.locales?.slice() ?? [];
 
-                    onChange([...tempOptions]);
-                    console.info('[INFO] Option item Updated');
+                    const foundOptionLocaledItem = tempLocales.find(
+                        (x) => x.languageId === language.id,
+                    );
+                    const foundOptionLocaledIndex = tempLocales.findIndex(
+                        (x) => x.languageId === language.id,
+                    );
+
+                    if (foundOptionLocaledIndex >= 0) {
+                        tempLocales.splice(foundOptionLocaledIndex, 1, {
+                            ...foundOptionLocaledItem,
+                            text: value,
+                        });
+                    } else {
+                        tempLocales.push({
+                            formItemOptionId: option.id,
+                            languageId: language.id,
+                            languageCode: language.code,
+                            text: value,
+                        });
+                    }
+
+                    foundOption.locales = tempLocales;
+                } else {
+                    // default language
+
+                    foundOption.value = value;
+                    foundOption.text = value;
                 }
+
+                if (foundOptionIndex >= 0) {
+                    tempOptions.splice(foundOptionIndex, 1, {
+                        ...foundOption,
+                    });
+                }
+
+                onChange([...tempOptions]);
             }
         };
 
@@ -105,6 +141,88 @@ export const OptionsBuilder = ({
             }
         };
 
+    const handleClickTranslate = (option: FormItemOptionModel) => () => {
+        if (language && language.code !== defaultLanguageCode) {
+            const text = option.text;
+            if (!Boolean(text?.trim())) {
+                console.warn(
+                    'Text is empty. There is no origin text to translate.',
+                );
+            } else {
+                setTranslating((_) => true);
+
+                translationApiClient
+                    ?.apiv10TranslationsTranslate({
+                        getTranslatedTextQuery: {
+                            originLanguageCode: defaultLanguageCode,
+                            translateToLanguageCode: language.code,
+                            isHtml: false,
+                            text: text,
+                        },
+                    })
+                    .then((response) => {
+                        const translatedText = response.data.text;
+                        if (onChange) {
+                            const tempOptions = (options ?? []).slice();
+                            const foundOption = tempOptions.find(
+                                (x) => x.id === option.id,
+                            );
+                            const foundOptionIndex = tempOptions.findIndex(
+                                (x) => x.id === option.id,
+                            );
+
+                            if (
+                                language &&
+                                language.code !== defaultLanguageCode
+                            ) {
+                                const tempLocales =
+                                    foundOption.locales?.slice() ?? [];
+
+                                const foundOptionLocaledItem = tempLocales.find(
+                                    (x) => x.languageId === language.id,
+                                );
+                                const foundOptionLocaledIndex =
+                                    tempLocales.findIndex(
+                                        (x) => x.languageId === language.id,
+                                    );
+
+                                if (foundOptionLocaledIndex >= 0) {
+                                    tempLocales.splice(
+                                        foundOptionLocaledIndex,
+                                        1,
+                                        {
+                                            ...foundOptionLocaledItem,
+                                            text: translatedText,
+                                        },
+                                    );
+                                } else {
+                                    tempLocales.push({
+                                        formItemOptionId: option.id,
+                                        languageId: language.id,
+                                        languageCode: language.code,
+                                        text: translatedText,
+                                    });
+                                }
+
+                                foundOption.locales = tempLocales;
+                            }
+
+                            if (foundOptionIndex >= 0) {
+                                tempOptions.splice(foundOptionIndex, 1, {
+                                    ...foundOption,
+                                });
+                            }
+
+                            onChange([...tempOptions]);
+                        }
+                    })
+                    .finally(() => {
+                        setTranslating((_) => false);
+                    });
+            }
+        }
+    };
+
     if (disabled) {
         return (
             <div>
@@ -139,10 +257,27 @@ export const OptionsBuilder = ({
                         >
                             <input
                                 type="text"
-                                value={option.value}
+                                value={
+                                    (language &&
+                                    language.code !== defaultLanguageCode
+                                        ? option.locales?.find(
+                                              (x) =>
+                                                  x.languageId === language.id,
+                                          )?.text
+                                        : option.value) ?? ''
+                                }
                                 onChange={handleOptionChange(option)}
                             />
-
+                            {language && language.code !== defaultLanguageCode && (
+                                <button
+                                    type="button"
+                                    className="button flex sm"
+                                    onClick={handleClickTranslate(option)}
+                                    disabled={translating}
+                                >
+                                    Translate
+                                </button>
+                            )}
                             <button
                                 type="button"
                                 className="button flex sm"

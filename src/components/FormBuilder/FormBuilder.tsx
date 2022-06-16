@@ -225,58 +225,71 @@ const FormBuilder = () => {
 
     const handleClickTranslate = (name: string) => () => {
         setTranslating((_) => true);
-        translationApiClient
-            .apiv10TranslationsTranslate({
-                getTranslatedTextQuery: {
-                    originLanguageCode: defaultLanguageCode,
-                    translateToLanguageCode: currentLanguage?.code,
-                    text: currentForm[name],
-                    isHtml: false,
-                },
-            })
-            .then((response) => {
-                const translatedText = response.data.text;
 
-                setCurrentForm((prevState) => {
-                    if (currentLanguage) {
-                        const tempLocales = prevState.locales?.slice() ?? [];
-                        const foundItem = tempLocales.find(
-                            (x) => x.languageId === currentLanguage.id,
-                        );
-                        const index = tempLocales.findIndex(
-                            (x) => x.languageId === currentLanguage.id,
-                        );
+        if (currentLanguage && currentLanguage.code !== defaultLanguageCode) {
+            const text: string = currentForm[name];
 
-                        if (index >= 0) {
-                            tempLocales.splice(index, 1, {
-                                ...foundItem,
-                                [name]: translatedText,
-                            });
-                        } else {
-                            tempLocales.push({
-                                languageId: currentLanguage.id,
-                                languageCode: currentLanguage.code,
-                                [name]: translatedText,
-                            });
-                        }
+            if (!Boolean(text?.trim())) {
+                console.warn(
+                    'Text is empty. There is no origin text to translate.',
+                );
+            } else {
+                translationApiClient
+                    .apiv10TranslationsTranslate({
+                        getTranslatedTextQuery: {
+                            originLanguageCode: defaultLanguageCode,
+                            translateToLanguageCode: currentLanguage?.code,
+                            text: text,
+                            isHtml: false,
+                        },
+                    })
+                    .then((response) => {
+                        const translatedText = response.data.text;
 
-                        return {
-                            ...prevState,
-                            locales: [
-                                ...tempLocales.filter(
-                                    (x) =>
-                                        x.languageCode !== defaultLanguageCode,
-                                ),
-                            ],
-                        };
-                    }
+                        setCurrentForm((prevState) => {
+                            if (currentLanguage) {
+                                const tempLocales =
+                                    prevState.locales?.slice() ?? [];
+                                const foundItem = tempLocales.find(
+                                    (x) => x.languageId === currentLanguage.id,
+                                );
+                                const index = tempLocales.findIndex(
+                                    (x) => x.languageId === currentLanguage.id,
+                                );
 
-                    return prevState;
-                });
-            })
-            .finally(() => {
-                setTranslating((_) => false);
-            });
+                                if (index >= 0) {
+                                    tempLocales.splice(index, 1, {
+                                        ...foundItem,
+                                        [name]: translatedText,
+                                    });
+                                } else {
+                                    tempLocales.push({
+                                        languageId: currentLanguage.id,
+                                        languageCode: currentLanguage.code,
+                                        [name]: translatedText,
+                                    });
+                                }
+
+                                return {
+                                    ...prevState,
+                                    locales: [
+                                        ...tempLocales.filter(
+                                            (x) =>
+                                                x.languageCode !==
+                                                defaultLanguageCode,
+                                        ),
+                                    ],
+                                };
+                            }
+
+                            return prevState;
+                        });
+                    })
+                    .finally(() => {
+                        setTranslating((_) => false);
+                    });
+            }
+        }
     };
 
     useEffect(() => {
@@ -435,7 +448,10 @@ const FormBuilder = () => {
                     <div className="flex-1">
                         <h2 className="text-lg font-extrabold my-2">Preview</h2>
                         <FormRenderer
+                            editingMode
                             formItems={currentForm?.items}
+                            language={currentLanguage}
+                            defaultLanguageCode={defaultLanguageCode}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
                             onChangeOrder={handleChangeOrder}
@@ -469,7 +485,9 @@ const FormBuilder = () => {
                 <FormItemForm
                     initialFormItem={currentFormItem}
                     form={currentForm}
-                    langauge={currentLanguage}
+                    language={currentLanguage}
+                    defaultLanguageCode={defaultLanguageCode}
+                    translationApiClient={translationApiClient}
                     onEdited={handleEditedFormItem}
                     onCancel={handleClickCancelFormItem}
                 />
