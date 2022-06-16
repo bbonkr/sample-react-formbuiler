@@ -18,13 +18,13 @@ const FormItemPage = () => {
     }, [router.query]);
 
     return (
-        <Layout>
+        <Layout noHeader>
             <Head>
-                <title>Form</title>
+                <title>{formModel?.title}</title>
             </Head>
 
-            <Content title={formModel?.title} />
-            <hr />
+            {/* <Content title={formModel?.title} /> */}
+            {/* <hr /> */}
             {formModel && <FormViewer record={formModel} />}
         </Layout>
     );
