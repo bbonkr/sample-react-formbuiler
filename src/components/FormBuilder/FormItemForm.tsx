@@ -1,36 +1,226 @@
-import React from 'react';
-import { ElementTypes, FormItemModel, FormItemOptionModel } from '../../api';
-import type { FieldInputProps, FormikErrors } from 'formik/dist/types';
+import React, { useState } from 'react';
+import {
+    ElementTypes,
+    FormItemModel,
+    FormItemOptionModel,
+    FormModel,
+    LanguageModel,
+    TranslationsApi,
+} from '../../api';
 import { OptionsBuilder } from './OptionsBuilder';
-import { elementTypeItems } from '../FormRenderer/types';
+import { ElementType, elementTypeItems } from '../FormRenderer/types';
+import { useFormik } from 'formik';
+import { formItemModelValidationSchema } from '../../lib/ValidationSchema';
 
 interface FormItemFormProps {
-    values?: Partial<FormItemModel>;
-    errors: FormikErrors<Partial<FormItemModel>>;
-    isValid?: boolean;
-    getFieldProps: (nameOrOptions: any) => FieldInputProps<any>;
-    onSubmit?: (e?: React.FormEvent<HTMLFormElement>) => void;
-    onReset?: (e: React.FormEvent<HTMLFormElement>) => void;
-    onChangeName?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onChangeOptionBuilder?: (options: FormItemOptionModel[]) => void;
-    onChangeElementType?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    initialFormItem?: Partial<FormItemModel>;
+    form?: FormModel;
+    language?: LanguageModel;
+    defaultLanguageCode?: string;
+    translationApiClient?: TranslationsApi;
+    onEdited?: (formItem: FormItemModel) => void;
+    onCancel?: () => void;
 }
 
 export const FormItemForm = ({
-    values,
-    errors,
-    isValid,
-    getFieldProps,
-    onSubmit,
-    onReset,
-    onChangeName,
-    onChangeOptionBuilder,
-    onChangeElementType,
+    initialFormItem,
+    form,
+    language,
+    defaultLanguageCode,
+    translationApiClient,
+    onEdited,
+    onCancel,
 }: FormItemFormProps) => {
+    const [translating, setTranslating] = useState(false);
+
+    const {
+        values,
+        errors,
+        isValid,
+        isValidating,
+        isSubmitting,
+        handleSubmit,
+        handleReset,
+        handleChange,
+        getFieldProps,
+        setValues,
+        setFieldValue,
+        setFieldError,
+        resetForm,
+    } = useFormik<Partial<FormItemModel>>({
+        initialValues: initialFormItem,
+        enableReinitialize: true,
+        validationSchema: formItemModelValidationSchema,
+        onSubmit: (v, helper) => {
+            if (isValid) {
+                const formItem = v as FormItemModel;
+
+                let hasSameName = false;
+                form?.items?.forEach((item) => {
+                    if (
+                        item.id !== formItem.id &&
+                        item.name === formItem.name
+                    ) {
+                        hasSameName = true;
+                    }
+                });
+
+                if (hasSameName) {
+                    setFieldError(
+                        'name',
+                        'Name field has to need unique value',
+                    );
+                } else {
+                    if (onEdited) {
+                        onEdited(formItem);
+                    }
+
+                    helper.resetForm({});
+                }
+            }
+        },
+        onReset: (v, helper) => {
+            if (onCancel) {
+                onCancel();
+            }
+        },
+    });
+
+    const handleChangeElementType = (
+        e: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const selectedElementType = e.target.value as ElementType;
+
+        if (!['select', 'checkbox', 'radio'].includes(selectedElementType)) {
+            setFieldValue('options', undefined);
+            setFieldError('options', undefined);
+        }
+
+        if (selectedElementType === 'Radio') {
+            setFieldValue('isRequired', true);
+        } else {
+            setFieldValue('isRequired', false);
+        }
+
+        handleChange(e);
+    };
+
+    const handleChangeInputLocaled = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
+        if (language && language.code !== defaultLanguageCode) {
+            const name = e.target.name;
+            const value = e.target.value;
+
+            const tempArray = values.locales?.slice() ?? [];
+
+            const foundItem = tempArray.find(
+                (x) => x.languageId === language.id,
+            );
+            const foundIndex = tempArray.findIndex(
+                (x) => x.languageId === language.id,
+            );
+
+            if (foundIndex >= 0) {
+                tempArray.splice(foundIndex, 1, {
+                    ...foundItem,
+                    [name]: value,
+                });
+            } else {
+                tempArray.push({
+                    formId: values.id,
+                    languageId: language.id,
+                    languageCode: language.code,
+                    [name]: value,
+                });
+            }
+
+            setFieldValue('locales', tempArray);
+        } else {
+            // set own field value when language is default langauge
+            handleChange(e);
+        }
+    };
+
+    const handleChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const nameValue = e.target.value;
+        let hasSameName = false;
+        form?.items?.forEach((item) => {
+            if (item.id !== values.id && item.name === nameValue) {
+                hasSameName = true;
+            }
+        });
+
+        if (hasSameName) {
+            setFieldError('name', 'Name field has to need unique value');
+        }
+
+        handleChange(e);
+    };
+
+    const handleOptionBuilderChange = (options: FormItemOptionModel[]) => {
+        setFieldValue('options', options ?? []);
+    };
+
+    const handleClickTranslate = (name: string) => () => {
+        if (language && language.code !== defaultLanguageCode) {
+            const text: string = values[name];
+
+            if (!Boolean(text?.trim())) {
+                console.warn(
+                    'Text is empty. There is no origin text to translate.',
+                );
+            } else {
+                setTranslating((_) => true);
+
+                translationApiClient
+                    ?.apiv10TranslationsTranslate({
+                        getTranslatedTextQuery: {
+                            originLanguageCode: defaultLanguageCode,
+                            translateToLanguageCode: language?.code,
+                            isHtml: false,
+                            text: values[name],
+                        },
+                    })
+                    .then((response) => {
+                        const translatedText = response.data.text;
+
+                        const tempArray = values.locales?.slice() ?? [];
+
+                        const foundItem = tempArray.find(
+                            (x) => x.languageId === language.id,
+                        );
+                        const foundIndex = tempArray.findIndex(
+                            (x) => x.languageId === language.id,
+                        );
+
+                        if (foundIndex >= 0) {
+                            tempArray.splice(foundIndex, 1, {
+                                ...foundItem,
+                                [name]: translatedText,
+                            });
+                        } else {
+                            tempArray.push({
+                                formId: values.id,
+                                languageId: language.id,
+                                languageCode: language.code,
+                                [name]: translatedText,
+                            });
+                        }
+
+                        setFieldValue('locales', tempArray);
+                    })
+                    .finally(() => {
+                        setTranslating((_) => false);
+                    });
+            }
+        }
+    };
+
     return (
         <form
-            onSubmit={onSubmit}
-            onReset={onReset}
+            onSubmit={handleSubmit}
+            onReset={handleReset}
             className="flex flex-col gap-3"
         >
             <input
@@ -45,7 +235,7 @@ export const FormItemForm = ({
                 </label>
                 <select
                     {...getFieldProps('elementType')}
-                    onChange={onChangeElementType}
+                    onChange={handleChangeElementType}
                     value={values?.elementType ?? ''}
                 >
                     <option value="">Please select element type</option>
@@ -58,36 +248,96 @@ export const FormItemForm = ({
             </div>
 
             <div className="flex flex-col">
-                <label>
-                    Label:
-                    <span className="text-red-500"> {errors.label}</span>
-                </label>
+                <div className="flex flex-row justify-between">
+                    <label className="flex-1">
+                        Label:
+                        <span className="text-red-500"> {errors.label}</span>
+                    </label>
+                    {language && language.code !== defaultLanguageCode && (
+                        <button
+                            type="button"
+                            className="button sm"
+                            onClick={handleClickTranslate('label')}
+                            disabled={translating}
+                        >
+                            Translate
+                        </button>
+                    )}
+                </div>
                 <input
                     type="text"
                     className="form-input"
                     {...getFieldProps('label')}
-                    value={values?.label ?? ''}
+                    onChange={handleChangeInputLocaled}
+                    value={
+                        (language && language.code !== defaultLanguageCode
+                            ? values.locales?.find(
+                                  (x) => x.languageId === language.id,
+                              )?.label
+                            : values?.label) ?? ''
+                    }
                 />
             </div>
 
             <div className="flex flex-col">
-                <label>
-                    Placeholder:
-                    <span className="text-red-500"> {errors.placeholder}</span>
-                </label>
+                <div className="flex flex-row justify-between">
+                    <label className="flex-1">
+                        Placeholder:
+                        <span className="text-red-500">
+                            {' '}
+                            {errors.placeholder}
+                        </span>
+                    </label>
+                    {language && language.code !== defaultLanguageCode && (
+                        <button
+                            type="button"
+                            className="button sm"
+                            onClick={handleClickTranslate('placeholder')}
+                            disabled={translating}
+                        >
+                            Translate
+                        </button>
+                    )}
+                </div>
                 <input
                     type="text"
                     className="form-input"
                     {...getFieldProps('placeholder')}
-                    value={values?.placeholder ?? ''}
+                    onChange={handleChangeInputLocaled}
+                    value={
+                        (language && language.code !== defaultLanguageCode
+                            ? values.locales?.find(
+                                  (x) => x.languageId === language.id,
+                              )?.placeholder
+                            : values?.placeholder) ?? ''
+                    }
                 />
             </div>
 
             <div className="flex flex-col">
-                <label>Description:</label>
+                <div className="flex flex-row justify-between">
+                    <label>Description:</label>
+                    {language && language.code !== defaultLanguageCode && (
+                        <button
+                            type="button"
+                            className="button sm"
+                            onClick={handleClickTranslate('description')}
+                            disabled={translating}
+                        >
+                            Translate
+                        </button>
+                    )}
+                </div>
                 <textarea
                     {...getFieldProps('description')}
-                    value={values?.description ?? ''}
+                    onChange={handleChangeInputLocaled}
+                    value={
+                        (language && language.code !== defaultLanguageCode
+                            ? values.locales?.find(
+                                  (x) => x.languageId === language.id,
+                              )?.description
+                            : values?.description) ?? ''
+                    }
                 />
             </div>
             <div className="flex flex-col">
@@ -98,7 +348,7 @@ export const FormItemForm = ({
                 <input
                     type="text"
                     {...getFieldProps('name')}
-                    onChange={onChangeName}
+                    onChange={handleChangeName}
                     value={values?.name ?? ''}
                 />
             </div>
@@ -113,6 +363,9 @@ export const FormItemForm = ({
                 </label>
                 <OptionsBuilder
                     options={values?.options ?? []}
+                    language={language}
+                    defaultLanguageCode={defaultLanguageCode}
+                    translationApiClient={translationApiClient}
                     disabled={
                         ![
                             ElementTypes.Select,
@@ -120,32 +373,8 @@ export const FormItemForm = ({
                             ElementTypes.Radio,
                         ].includes(values?.elementType)
                     }
-                    onChange={onChangeOptionBuilder}
+                    onChange={handleOptionBuilderChange}
                 />
-                {/* <input
-                                type="text"
-                                className="form-input"
-                                {...getFieldProps('options')}
-                                value={
-                                    values.options
-                                        ?.map((option) => option?.value)
-                                        .join(';') ?? ''
-                                }
-                                disabled={
-                                    ![
-                                        ElementTypes.Select,
-                                        ElementTypes.Checkbox,
-                                        ElementTypes.Radio,
-                                    ].includes(values.elementType)
-                                }
-                                readOnly={
-                                    ![
-                                        ElementTypes.Select,
-                                        ElementTypes.Checkbox,
-                                        ElementTypes.Radio,
-                                    ].includes(values.elementType)
-                                }
-                            /> */}
             </div>
             <div className="flex flex-col">
                 <label className="">Required:</label>
@@ -163,7 +392,7 @@ export const FormItemForm = ({
             <div className="flex flex-row justify-center items-stretch my-6">
                 {values?.id && (
                     <button className="button flex-1" type="reset">
-                        Reset
+                        Cancel
                     </button>
                 )}
                 <button

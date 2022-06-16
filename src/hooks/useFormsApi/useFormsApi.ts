@@ -7,15 +7,11 @@ import {
     FormsApiApiv10FormsGetFormByIdRequest,
     FormsApiApiv10FormsGetFormsRequest,
 } from '../../api';
-// import { FormSource } from '../../components/FormRenderer';
 import { rootActions } from '../../store/actions';
 import { FormSourceState, RootState } from '../../store/reducers';
 
 export const useFormsApi = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API ?? '';
-    // const { forms } = useSelector<RootState, FormSourceState>(
-    //     (s) => s.sourceState,
-    // );
 
     const { formModel } = useSelector<RootState, FormSourceState>(
         (s) => s.sourceState,
@@ -27,9 +23,7 @@ export const useFormsApi = () => {
     const { addedOrUpdatedFormId } = useSelector<RootState, FormSourceState>(
         (s) => s.sourceState,
     );
-    // const { form } = useSelector<RootState, FormSourceState>(
-    //     (s) => s.sourceState,
-    // );
+
     const client = new FormsApi(undefined, baseUrl);
     const dispatch = useDispatch();
 
@@ -64,6 +58,9 @@ export const useFormsApi = () => {
                 })
                 .then((response) => {
                     return response.data;
+                })
+                .catch((error) => {
+                    console.error(error);
                 });
         },
     );
@@ -80,6 +77,9 @@ export const useFormsApi = () => {
                     .apiv10FormsGetFormById({ id })
                     .then((response) => {
                         return response.data;
+                    })
+                    .catch((error) => {
+                        console.error(error);
                     });
             } else {
                 return undefined;
@@ -87,7 +87,12 @@ export const useFormsApi = () => {
         },
     );
 
-    const getForms = (page: number, limit: number = 10, keyword?: string) => {
+    const getForms = (
+        page: number = 1,
+        limit: number = 10,
+        keyword?: string,
+    ) => {
+        setGetFormsOptions((_) => undefined);
         setGetFormsOptions((prevState) => ({
             ...prevState,
             page,
@@ -115,10 +120,12 @@ export const useFormsApi = () => {
         client
             .apiv10FormsAddForm({
                 addFormCommand: {
+                    ...item,
                     title: candidate.title ?? 'No title',
-                    content: JSON.stringify(candidate, null, 4),
+                    // content: JSON.stringify(candidate, null, 4),
                     items: item.items.map((formItem) => ({
                         ...formItem,
+                        id: undefined,
                         options:
                             formItem.options?.map((op) => ({
                                 ...op,
@@ -144,23 +151,28 @@ export const useFormsApi = () => {
 
                 //     dispatch(rootActions.source.addOrUpdate(addedItem));
                 // }
+            })
+            .catch((error) => {
+                console.error(error);
             });
     };
 
     const updateForm = (item: FormModel) => {
         dispatch(rootActions.source.setAddedOrUpdatedFormSourceId(null));
-        const candidate = { ...item };
+        const candidate: FormModel = { ...item };
 
         delete candidate.items;
 
         client
             .apiv10FormsUpdateForm({
                 updateFormCommand: {
+                    ...item,
                     id: candidate.id,
                     title: candidate.title ?? 'No title',
-                    content: JSON.stringify(candidate, null, 4),
+                    // content: JSON.stringify(candidate, null, 4),
                     items: item.items.map((formItem) => ({
                         ...formItem,
+                        id: undefined,
                         options:
                             formItem.options?.map((op) => ({
                                 ...op,
@@ -176,21 +188,9 @@ export const useFormsApi = () => {
                 dispatch(
                     rootActions.source.setAddedOrUpdatedFormSourceId(data.id),
                 );
-
-                // const updatedItem: FormSource = JSON.parse(
-                //     data.content,
-                // ) as FormSource;
-
-                // if (updatedItem) {
-                //     updatedItem.id = data.id;
-
-                //     dispatch(rootActions.source.addOrUpdate(updatedItem));
-                //     dispatch(
-                //         rootActions.source.setAddedOrUpdatedFormSourceId(
-                //             updatedItem.id,
-                //         ),
-                //     );
-                // }
+            })
+            .catch((error) => {
+                console.error(error);
             });
     };
 
@@ -206,46 +206,20 @@ export const useFormsApi = () => {
     useEffect(() => {
         if (!isLoadingGetForms && pagedFormModels) {
             dispatch(rootActions.source.setFormsPagedModel(pagedFormModels));
-
-            // const formSources = pagedFormModels.items.map((x) => {
-            //     console.info('x.content:', x.content);
-
-            //     const formSource: FormSource = JSON.parse(
-            //         x.content,
-            //     ) as FormSource;
-            //     formSource.id = x.id;
-            //     formSource.title = x.title;
-            //     return formSource;
-            // });
-
-            // dispatch(rootActions.source.intialize(formSources ?? []));
         }
     }, [pagedFormModels, isLoadingGetForms]);
 
     useEffect(() => {
         if (!isLoadingGetFormById && getFormByIdData) {
             dispatch(rootActions.source.setFormModel(getFormByIdData));
-
-            // const formSource: FormSource = JSON.parse(
-            //     getFormByIdData.content,
-            // ) as FormSource;
-
-            // if (formSource) {
-            //     formSource.id = getFormByIdData.id;
-            //     formSource.title = getFormByIdData.title;
-
-            //     dispatch(rootActions.source.setCurrentForm(formSource));
-            // }
         }
     }, [getFormByIdData, isLoadingGetFormById]);
 
     return {
         addedOrUpdatedFormId,
-        // forms,
         isLoadingGetForms,
         getFormsError,
         getForms,
-        // form,
         formPagedModel,
         formModel,
         getForm,

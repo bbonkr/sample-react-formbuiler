@@ -13,7 +13,6 @@ const Modal = ({
     onClose,
 }: React.PropsWithChildren<ModalProps>) => {
     const handleKeyboardEvent = (e: KeyboardEvent) => {
-        console.info(e.key);
         if (e.key === 'Escape') {
             if (onClose) {
                 onClose();

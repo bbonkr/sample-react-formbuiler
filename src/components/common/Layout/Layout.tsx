@@ -1,13 +1,15 @@
 import React from 'react';
 import Header from '../Header';
 
-type MainProps = {};
+interface MainProps {
+    noHeader?: boolean;
+}
 
-const Layout = ({ children }: React.PropsWithChildren<MainProps>) => {
+const Layout = ({ noHeader, children }: React.PropsWithChildren<MainProps>) => {
     return (
         <React.Fragment>
             <div>
-                <Header />
+                {!noHeader && <Header />}
                 <main className="container mx-auto flex flex-col pt-3 justify-between">
                     {children}
                 </main>

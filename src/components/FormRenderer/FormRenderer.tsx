@@ -1,6 +1,6 @@
 import { FormikErrors } from 'formik/dist/types';
 import React, { useState } from 'react';
-import { ElementTypes, FormItemModel } from '../../api';
+import { FormItemModel, LanguageModel } from '../../api';
 import { InputRenderer } from './InputRenderer';
 import { elementTypeItems, FormValues } from './types';
 
@@ -8,7 +8,9 @@ interface FormRendererProps {
     formItems?: FormItemModel[];
     values?: FormValues;
     errors?: FormikErrors<Partial<FormValues>>;
-    readonly?: boolean;
+    editingMode?: boolean;
+    language?: LanguageModel;
+    defaultLanguageCode?: string;
 
     onEdit?: (item: FormItemModel) => void;
     onDelete?: (item: FormItemModel) => void;
@@ -20,7 +22,9 @@ const FormRenderer = ({
     formItems,
     values,
     errors,
-    readonly,
+    editingMode,
+    language,
+    defaultLanguageCode,
     onEdit,
     onDelete,
     onChangeOrder,
@@ -93,6 +97,25 @@ const FormRenderer = ({
                     (x) => x.type === item.elementType,
                 );
 
+                const label =
+                    language && language.code !== defaultLanguageCode
+                        ? item.locales?.find(
+                              (x) => x.languageId === language.id,
+                          )?.label
+                        : item.label;
+                const description =
+                    (language && language.code !== defaultLanguageCode
+                        ? item.locales?.find(
+                              (x) => x.languageId === language.id,
+                          )?.description
+                        : item.description) ?? '';
+                const placeholder =
+                    (language && language.code !== defaultLanguageCode
+                        ? item.locales?.find(
+                              (x) => x.languageId === language.id,
+                          )?.placeholder
+                        : item.placeholder) ?? '';
+
                 return (
                     <div
                         className="flex flex-col gap-1 relative border-2 px-4 py-2 rounded border-slate-200"
@@ -100,7 +123,7 @@ const FormRenderer = ({
                         onMouseEnter={handleMouseEnter(item)}
                         onMouseLeave={handleMouseLeave(item)}
                     >
-                        {!readonly && (
+                        {editingMode && (
                             <dl className="font-mono text-sm flex flex-row gap-3">
                                 <dt>Id:</dt>
                                 <dd>{item.id}</dd>
@@ -113,7 +136,7 @@ const FormRenderer = ({
                             htmlFor={controlId}
                             className="font-bold"
                         >
-                            {item.label}
+                            {label}
                             <span className="text-red-400">
                                 {errors && errors[item.name]}
                             </span>
@@ -122,7 +145,7 @@ const FormRenderer = ({
                             <p className="my-1 text-red-400">* Required</p>
                         )}
                         {item.description && (
-                            <p className="font-thin my-1">{item.description}</p>
+                            <p className="font-thin my-1">{description}</p>
                         )}
                         {inputTypeItem.element === 'input' ? (
                             <InputRenderer
@@ -141,7 +164,7 @@ const FormRenderer = ({
                                 required={item.isRequired}
                                 onChange={handleChangeDefault(item)}
                                 value={values ? values[item.name] ?? '' : ''}
-                                placeholder={item.placeholder}
+                                placeholder={placeholder}
                             >
                                 <option value="">{'Please select item'}</option>
 
@@ -161,13 +184,13 @@ const FormRenderer = ({
                                 required={item.isRequired}
                                 onChange={handleChangeDefault(item)}
                                 value={values ? values[item.name] ?? '' : ''}
-                                placeholder={item.placeholder}
+                                placeholder={placeholder}
                             />
                         ) : (
                             <div></div>
                         )}
 
-                        {!readonly && (
+                        {editingMode && (
                             <div
                                 className={`flex flex-col justify-center items-center absolute top-0 left-0 right-0 bottom-0 bg-slate-500 opacity-90 ${
                                     hoverId === item.id ? '' : 'hidden'

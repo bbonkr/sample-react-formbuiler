@@ -35,17 +35,16 @@ export interface AddFormCommand {
     title?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof AddFormCommand
-     * @deprecated
-     */
-    content?: string | null;
-    /**
-     * 
      * @type {Array<FormItemModel>}
      * @memberof AddFormCommand
      */
     items?: Array<FormItemModel> | null;
+    /**
+     * 
+     * @type {Array<FormLocaledModel>}
+     * @memberof AddFormCommand
+     */
+    locales?: Array<FormLocaledModel> | null;
 }
 /**
  * 
@@ -176,6 +175,49 @@ export interface ErrorModelApiResponseModel {
 /**
  * 
  * @export
+ * @interface FormItemLocaledModel
+ */
+export interface FormItemLocaledModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemLocaledModel
+     */
+    formId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemLocaledModel
+     */
+    languageId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemLocaledModel
+     */
+    languageCode?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemLocaledModel
+     */
+    label?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemLocaledModel
+     */
+    description?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemLocaledModel
+     */
+    placeholder?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface FormItemModel
  */
 export interface FormItemModel {
@@ -184,13 +226,13 @@ export interface FormItemModel {
      * @type {string}
      * @memberof FormItemModel
      */
-    id?: string;
+    id?: string | null;
     /**
      * 
      * @type {string}
      * @memberof FormItemModel
      */
-    formId?: string;
+    formId?: string | null;
     /**
      * 
      * @type {ElementTypes}
@@ -239,6 +281,43 @@ export interface FormItemModel {
      * @memberof FormItemModel
      */
     options?: Array<FormItemOptionModel> | null;
+    /**
+     * 
+     * @type {Array<FormItemLocaledModel>}
+     * @memberof FormItemModel
+     */
+    locales?: Array<FormItemLocaledModel> | null;
+}
+/**
+ * 
+ * @export
+ * @interface FormItemOptionLocaledModel
+ */
+export interface FormItemOptionLocaledModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionLocaledModel
+     */
+    formItemOptionId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionLocaledModel
+     */
+    languageId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionLocaledModel
+     */
+    languageCode?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormItemOptionLocaledModel
+     */
+    text?: string | null;
 }
 /**
  * 
@@ -251,13 +330,13 @@ export interface FormItemOptionModel {
      * @type {string}
      * @memberof FormItemOptionModel
      */
-    id?: string;
+    id?: string | null;
     /**
      * 
      * @type {string}
      * @memberof FormItemOptionModel
      */
-    formItemId?: string;
+    formItemId?: string | null;
     /**
      * 
      * @type {string}
@@ -276,6 +355,43 @@ export interface FormItemOptionModel {
      * @memberof FormItemOptionModel
      */
     ordinal?: number;
+    /**
+     * 
+     * @type {Array<FormItemOptionLocaledModel>}
+     * @memberof FormItemOptionModel
+     */
+    locales?: Array<FormItemOptionLocaledModel> | null;
+}
+/**
+ * 
+ * @export
+ * @interface FormLocaledModel
+ */
+export interface FormLocaledModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof FormLocaledModel
+     */
+    formId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormLocaledModel
+     */
+    languageId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormLocaledModel
+     */
+    languageCode?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof FormLocaledModel
+     */
+    title?: string | null;
 }
 /**
  * 
@@ -288,20 +404,13 @@ export interface FormModel {
      * @type {string}
      * @memberof FormModel
      */
-    id?: string;
+    id?: string | null;
     /**
      * 
      * @type {string}
      * @memberof FormModel
      */
     title?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof FormModel
-     * @deprecated
-     */
-    content?: string | null;
     /**
      * 
      * @type {number}
@@ -314,6 +423,12 @@ export interface FormModel {
      * @memberof FormModel
      */
     items?: Array<FormItemModel> | null;
+    /**
+     * 
+     * @type {Array<FormLocaledModel>}
+     * @memberof FormModel
+     */
+    locales?: Array<FormLocaledModel> | null;
 }
 /**
  * 
@@ -577,17 +692,16 @@ export interface UpdateFormCommand {
     title?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof UpdateFormCommand
-     * @deprecated
-     */
-    content?: string | null;
-    /**
-     * 
      * @type {Array<FormItemModel>}
      * @memberof UpdateFormCommand
      */
     items?: Array<FormItemModel> | null;
+    /**
+     * 
+     * @type {Array<FormLocaledModel>}
+     * @memberof UpdateFormCommand
+     */
+    locales?: Array<FormLocaledModel> | null;
 }
 /**
  * 

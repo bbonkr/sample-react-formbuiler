@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import React from 'react';
 import { FormModelPagedModel } from '../../api';
 
@@ -30,9 +29,13 @@ const FormsList = ({ records }: FormsListProps) => {
                                     <tr key={item.id} className="">
                                         <td className="py-1">{item.title}</td>
                                         <td className="py-1">
-                                            <Link href={`/forms/${item.id}`}>
-                                                <a>Form link {item.id}</a>
-                                            </Link>
+                                            <a
+                                                href={`/forms/${item.id}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                Form link {item.title}
+                                            </a>
                                         </td>
                                     </tr>
                                 );
