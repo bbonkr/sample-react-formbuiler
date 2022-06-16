@@ -44,12 +44,14 @@ export const useResultsApi = (props?: UseResultsApiProps) => {
             `/api/results?page=${getResultsOptions.page}&limit=${getResultsOptions.limit}`,
             getResultsOptions.page ?? 1,
             getResultsOptions.limit ?? 10,
+            getResultsOptions.formId ?? '',
         ],
-        (_, page, limit) => {
+        (_, page, limit, formId) => {
             return client
                 .apiv10ResultsGetResults({
-                    page: page,
-                    limit: limit,
+                    page,
+                    limit,
+                    formId: formId ? formId : undefined,
                 })
                 .then((response) => {
                     return response.data;
@@ -76,11 +78,16 @@ export const useResultsApi = (props?: UseResultsApiProps) => {
         },
     );
 
-    const getResults = (page: number = 1, limit: number = 10) => {
+    const getResults = (
+        page: number = 1,
+        limit: number = 10,
+        formId?: string,
+    ) => {
         setGetResultsOptions((prevState) => ({
             ...prevState,
             page,
             limit,
+            formId,
         }));
     };
 

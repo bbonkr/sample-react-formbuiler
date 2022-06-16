@@ -1,14 +1,44 @@
 import Link from 'next/link';
-import React from 'react';
-import { ResultModelPagedModel } from '../../api';
+import React, { useEffect, useState } from 'react';
+import { useFormsApi } from '../../hooks/useFormsApi';
+import { useResultsApi } from '../../hooks/useResultsApi';
 
-interface ResultListProps {
-    records?: ResultModelPagedModel | null;
-}
+const ResultList = () => {
+    const [currentFormId, setCurrentFormId] = useState<string>();
 
-const ResultList = ({ records }: ResultListProps) => {
+    const { formPagedModel } = useFormsApi();
+
+    const { results, getResults } = useResultsApi();
+
+    const handleChangeFormSelect = (
+        e: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const formId = e.target.value;
+        setCurrentFormId((_) => formId);
+    };
+
+    useEffect(() => {
+        getResults(1, 10, currentFormId ? currentFormId : undefined);
+    }, [currentFormId]);
+
     return (
-        <div>
+        <div className="flex flex-col justify-center items-center">
+            <div className="w-full flex flex-row flex-1">
+                <select
+                    className="w-full flex-1"
+                    onChange={handleChangeFormSelect}
+                    value={currentFormId}
+                >
+                    <option value="">All forms</option>
+                    {formPagedModel?.items?.map((item) => {
+                        return (
+                            <option key={item.id} value={item.id}>
+                                {item.title}
+                            </option>
+                        );
+                    })}
+                </select>
+            </div>
             <table className="table w-full">
                 <thead>
                     <tr className="border-y-2">
@@ -18,7 +48,7 @@ const ResultList = ({ records }: ResultListProps) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {!records || records?.items.length === 0 ? (
+                    {!results || results?.items.length === 0 ? (
                         <tr>
                             <td className="text-center" colSpan={3}>
                                 No item
@@ -26,7 +56,7 @@ const ResultList = ({ records }: ResultListProps) => {
                         </tr>
                     ) : (
                         <React.Fragment>
-                            {records.items.map((item) => {
+                            {results.items.map((item) => {
                                 return (
                                     <tr key={item.id} className="">
                                         <td className="text-center py-1">
