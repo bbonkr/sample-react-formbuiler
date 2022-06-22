@@ -102,6 +102,7 @@ export const useResultsApi = (props?: UseResultsApiProps) => {
                 addResultCommand: {
                     formId: item.formId,
                     content: serialized,
+                    items: [...item.items],
                 },
             })
             .then((response) => {
@@ -111,6 +112,9 @@ export const useResultsApi = (props?: UseResultsApiProps) => {
                 if (props && props.addResultCallback) {
                     props.addResultCallback(responseData);
                 }
+            })
+            .catch((e) => {
+                console.warn(e);
             });
     };
 

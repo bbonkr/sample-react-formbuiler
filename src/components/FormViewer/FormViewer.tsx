@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import FormRenderer from '../FormRenderer/FormRenderer';
-import { FormAnswer, FormResult } from '../FormRenderer/types';
 import { string } from 'yup';
 import { useResultsApi } from '../../hooks/useResultsApi';
-import { FormItemModel, FormModel, LanguageModel } from '../../api';
+import {
+    FormItemModel,
+    FormModel,
+    LanguageModel,
+    ResultItemModel,
+    ResultItemValueModel,
+    ResultModel,
+} from '../../api';
 import LanguageSelector from '../LanguageSelector';
 import { useRouter } from 'next/router';
 
@@ -25,7 +31,7 @@ const FormViewer = ({ record }: FormViewerProps) => {
         },
     });
 
-    const [result, setResult] = useState<FormResult>();
+    const [result, setResult] = useState<ResultModel>();
     const [currentLanguage, setCurrentLanguage] = useState<LanguageModel>();
 
     const validateItem = (
@@ -80,16 +86,37 @@ const FormViewer = ({ record }: FormViewerProps) => {
             onSubmit: async (v, helper) => {
                 const isValid = validateFormValues(record, v);
                 if (isValid) {
-                    const result: FormResult = {
-                        id: `${+new Date()}`,
+                    const result: ResultModel = {
+                        // id: `${+new Date()}`,
                         formId: record.id,
+                        content: '',
                         items: record?.items?.map((item) => {
-                            const answer: FormAnswer = {
-                                ...item,
-                                answers: v[item.name],
+                            const answer = v[item.name];
+                            let formItemValues: ResultItemValueModel[] = [];
+
+                            if (typeof answer === 'string') {
+                                formItemValues = [
+                                    {
+                                        id: undefined,
+                                        value: answer,
+                                    },
+                                ];
+                            } else if (Array.isArray(answer)) {
+                                formItemValues = answer.map((x) => ({
+                                    id: undefined,
+                                    value: x,
+                                }));
+                            } else {
+                                formItemValues = [];
+                            }
+
+                            const resultItem: ResultItemModel = {
+                                id: undefined,
+                                formItemId: item.id,
+                                values: formItemValues,
                             };
 
-                            return answer;
+                            return resultItem;
                         }),
                     };
 
