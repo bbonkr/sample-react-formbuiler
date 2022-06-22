@@ -64,6 +64,12 @@ export interface AddResultCommand {
      * @memberof AddResultCommand
      */
     content?: string | null;
+    /**
+     * 
+     * @type {Array<ResultItemModel>}
+     * @memberof AddResultCommand
+     */
+    items?: Array<ResultItemModel> | null;
 }
 /**
  * 
@@ -582,6 +588,56 @@ export interface LanguageModelPagedModel {
 /**
  * 
  * @export
+ * @interface ResultItemModel
+ */
+export interface ResultItemModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof ResultItemModel
+     */
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ResultItemModel
+     */
+    formItemId?: string;
+    /**
+     * 
+     * @type {FormItemModel}
+     * @memberof ResultItemModel
+     */
+    formItem?: FormItemModel;
+    /**
+     * 
+     * @type {Array<ResultItemValueModel>}
+     * @memberof ResultItemModel
+     */
+    values?: Array<ResultItemValueModel> | null;
+}
+/**
+ * 
+ * @export
+ * @interface ResultItemValueModel
+ */
+export interface ResultItemValueModel {
+    /**
+     * 
+     * @type {string}
+     * @memberof ResultItemValueModel
+     */
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ResultItemValueModel
+     */
+    value?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface ResultModel
  */
 export interface ResultModel {
@@ -601,6 +657,7 @@ export interface ResultModel {
      * 
      * @type {string}
      * @memberof ResultModel
+     * @deprecated
      */
     content?: string | null;
     /**
@@ -609,6 +666,12 @@ export interface ResultModel {
      * @memberof ResultModel
      */
     form?: FormModel;
+    /**
+     * 
+     * @type {Array<ResultItemModel>}
+     * @memberof ResultModel
+     */
+    items?: Array<ResultItemModel> | null;
 }
 /**
  * 
