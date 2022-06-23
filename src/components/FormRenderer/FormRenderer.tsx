@@ -9,6 +9,7 @@ interface FormRendererProps {
     values?: FormValues;
     errors?: FormikErrors<Partial<FormValues>>;
     editingMode?: boolean;
+    canEdit?: boolean;
     language?: LanguageModel;
     defaultLanguageCode?: string;
 
@@ -23,6 +24,7 @@ const FormRenderer = ({
     values,
     errors,
     editingMode,
+    canEdit,
     language,
     defaultLanguageCode,
     onEdit,
@@ -196,42 +198,44 @@ const FormRenderer = ({
                                     hoverId === item.id ? '' : 'hidden'
                                 }`}
                             >
-                                <div className="flex flex-row gap-3 my-3">
-                                    {allowsUp && (
+                                {canEdit && (
+                                    <div className="flex flex-row gap-3 my-3">
+                                        {allowsUp && (
+                                            <button
+                                                className="button"
+                                                onClick={handleChangeOrder(
+                                                    item,
+                                                    indexToUp,
+                                                )}
+                                            >
+                                                Up
+                                            </button>
+                                        )}
+                                        {allowsDown && (
+                                            <button
+                                                className="button"
+                                                onClick={handleChangeOrder(
+                                                    item,
+                                                    indexToDown,
+                                                )}
+                                            >
+                                                Down
+                                            </button>
+                                        )}
                                         <button
                                             className="button"
-                                            onClick={handleChangeOrder(
-                                                item,
-                                                indexToUp,
-                                            )}
+                                            onClick={handleEdit(item)}
                                         >
-                                            Up
+                                            Edit
                                         </button>
-                                    )}
-                                    {allowsDown && (
                                         <button
-                                            className="button"
-                                            onClick={handleChangeOrder(
-                                                item,
-                                                indexToDown,
-                                            )}
+                                            className="button danger"
+                                            onClick={handleDelete(item)}
                                         >
-                                            Down
+                                            Delete
                                         </button>
-                                    )}
-                                    <button
-                                        className="button"
-                                        onClick={handleEdit(item)}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="button danger"
-                                        onClick={handleDelete(item)}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
