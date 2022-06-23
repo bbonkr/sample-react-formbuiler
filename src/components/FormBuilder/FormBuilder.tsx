@@ -487,7 +487,8 @@ const FormBuilder = () => {
                     <div className="flex-1">
                         <h2 className="text-lg font-extrabold my-2">Preview</h2>
                         <FormRenderer
-                            editingMode={(currentForm?.resultsCount ?? 0) === 0}
+                            editingMode
+                            canEdit={(currentForm?.resultsCount ?? 0) === 0}
                             formItems={currentForm?.items}
                             language={currentLanguage}
                             defaultLanguageCode={defaultLanguageCode}
