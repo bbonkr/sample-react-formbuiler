@@ -63,6 +63,15 @@ export const useFormsApi = () => {
                     console.error(error);
                 });
         },
+        {
+            revalidateOnFocus: false,
+            refreshInterval: 0,
+            refreshWhenHidden: false,
+            // revalidateOnMount: false,
+            revalidateOnReconnect: false,
+            refreshWhenOffline: false,
+            // revalidateIfStale: false,
+        },
     );
 
     const {
@@ -173,12 +182,26 @@ export const useFormsApi = () => {
                     items: item.items.map((formItem) => ({
                         ...formItem,
                         id: undefined,
+                        locales:
+                            formItem.locales?.map((l) => ({
+                                ...l,
+                                id: undefined,
+                            })) ?? [],
                         options:
                             formItem.options?.map((op) => ({
                                 ...op,
                                 id: undefined,
+                                locales: op.locales?.map((l) => ({
+                                    ...l,
+                                    id: undefined,
+                                })),
                             })) ?? [],
                     })),
+                    locales:
+                        item.locales?.map((l) => ({
+                            ...l,
+                            id: undefined,
+                        })) ?? [],
                 },
             })
             .then((response) => {
