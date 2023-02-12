@@ -29,7 +29,7 @@
         "postcss": "^8.3.11",
         "tailwindcss": "^3.0.24",
         "typescript": "^4.5.2",
-        "vercel": "^23.1.2"
+        "vercel": "^28.15.3"
     },
     "dependencies": {
         "@bbon/filedownload": "^1.2.3",
